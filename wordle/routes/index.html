@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        async function submit()
+        {
+            const input = document.getElementById("word").value;
+            const responseText = await (await fetch("/guess?word=" + input, { method: "POST" })).text();
+
+            try
+            {
+                response = JSON.parse(responseText);
+                let innerHTML = "";
+                for (let index = 0; index < response.length; index++)
+                {
+                    let color = "";
+
+                    switch (response[index].type)
+                    {
+                        case "absent":
+                            color = "black";
+                            break;
+                        case "present":
+                            color = "yellow";
+                            break;
+                        case "correct":
+                            color = "green";
+                            break;
+                        default:
+                            color = "";
+                            break;
+                    }
+
+                    innerHTML += `<span style="color:${color}">${String.fromCharCode(response[index]._charCode)}</span>`;
+                }
+
+                document.getElementById("words").innerHTML += innerHTML + "<br/>";
+            }
+            catch {
+                console.log(responseText);
+            }
+        }
+    </script>
+</head>
+<body>
+    <input id="word" />
+    <button onclick="submit()">submit</button>
+    <div id="words">
+    </div>
+</body>
+</html>
