@@ -32,13 +32,13 @@
   <ItemGroup>
     <None Include="app.ts" />
     <None Include="routes\index.ts" />
-    <Content Include="routes\index.html">
+    <Content Include="routes\index.html" />
+    <Content Include="routes\stylesheet.css">
       <SubType>Code</SubType>
     </Content>
     <Content Include="routes\vocabulary.json" />
     <Content Include="tsconfig.json" />
     <Content Include="package.json" />
-    <Content Include="public\stylesheets\main.css" />
     <Content Include="README.md" />
     <Content Include="views\index.pug" />
     <Content Include="views\layout.pug" />
@@ -47,10 +47,6 @@
     <Content Include="Web.Debug.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="public\" />
-    <Folder Include="public\images\" />
-    <Folder Include="public\javascripts\" />
-    <Folder Include="public\stylesheets\" />
     <Folder Include="routes\" />
     <Folder Include="views\" />
   </ItemGroup>

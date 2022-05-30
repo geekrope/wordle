@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "wordle", "server\wordle.njsproj", "{5F163434-6433-468C-BADB-278637BA318D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client", "client\client\client.csproj", "{2574F603-4B6C-4A30-BFDD-E3BC09EEDFDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client", "client\client.csproj", "{2574F603-4B6C-4A30-BFDD-E3BC09EEDFDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5F163434-6433-468C-BADB-278637BA318D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5F163434-6433-468C-BADB-278637BA318D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5F163434-6433-468C-BADB-278637BA318D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5F163434-6433-468C-BADB-278637BA318D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2574F603-4B6C-4A30-BFDD-E3BC09EEDFDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2574F603-4B6C-4A30-BFDD-E3BC09EEDFDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2574F603-4B6C-4A30-BFDD-E3BC09EEDFDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -26,6 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {EC9262E0-2B71-4879-A58D-3A8310214D31}
+		SolutionGuid = {2607BC33-CA17-4D82-AD8D-82DC3021C988}
 	EndGlobalSection
 EndGlobal

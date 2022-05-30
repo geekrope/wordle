@@ -1,0 +1,64 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+}
+
+:root {
+    --size: max(min(1px, calc(100vw / 330)), calc(32px / 62));
+}
+
+.flex {
+    display: flex;
+    justify-content: stretch;
+}
+
+.rowContainer {
+    flex-flow: row;
+    width: calc(var(--size) * 330);
+    height: min-content;
+}
+
+.columnContainer {
+    flex-flow: column;
+    width: min-content;
+    height: calc(var(--size) * 400);
+}
+
+.letterContainer {
+    display: flex;
+    border: 2px solid;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: Arial;
+    width: calc(var(--size) * 62);
+    height: calc(var(--size) * 62);
+    justify-content: center;
+    align-items: center;
+}
+
+.unspecifiedLetter {
+    border-color: #d3d6da;
+    color: black;   
+}
+
+.specifiedLetter {
+    animation: appear 1s;
+    color: white;
+}
+
+@keyframes appear {
+    0% {
+        transform: rotateX(0deg);
+    }
+
+    40% {
+        transform: rotateX(90deg);
+    }
+
+    0% {
+        transform: rotateX(0deg);
+    }
+}
