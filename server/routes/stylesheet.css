@@ -3,16 +3,24 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    background: #000000;
+    background: #ffffff;
 }
 
 :root {
     --size: max(min(1px, calc(100vw / 330)), calc(32px / 62));
+    --background-unspecified: #d3d6da;
+    --color-unspecified: #000000;
+    --background-specified-correct: #6aaa64;
+    --color-specified-correct: #ffffff;
+    --background-specified-present: #c9b458;
+    --color-specified-present: #ffffff;
+    --background-specified-absent: #787c7e;
+    --color-specified-absent: #ffffff;
 }
 
 .flex {
     display: flex;
-    justify-content: stretch;
+    justify-content: space-between;
 }
 
 .rowContainer {
@@ -33,32 +41,121 @@ body, html {
     font-size: 32px;
     font-weight: bold;
     font-family: Arial;
-    width: calc(var(--size) * 62);
-    height: calc(var(--size) * 62);
+    width: calc(var(--size) * 62 - 4px);
+    height: calc(var(--size) * 62 - 4px);
     justify-content: center;
     align-items: center;
 }
 
 .unspecifiedLetter {
-    border-color: #d3d6da;
-    color: black;   
+    border-color: var(--background-unspecified);
+    color: var(--color-unspecified);
 }
 
 .specifiedLetter {
-    animation: appear 1s;
-    color: white;
+    transform-style: preserve-3d;
+    border-color: var(--background-unspecified);
+    color: var(--color-unspecified);
 }
 
-@keyframes appear {
+.specifiedCorrect {
+    animation: appearCorrect 1s forwards;
+}
+
+.specifiedPresent {
+    animation: appearPresent 1s forwards;
+}
+
+.specifiedAbsent {
+    animation: appearAbsent 1s forwards;
+}
+
+@keyframes appearCorrect {
     0% {
         transform: rotateX(0deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
     }
 
     40% {
         transform: rotateX(90deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
     }
 
+    41% {
+        transform: rotateX(90deg);
+        border-color: var(--background-specified-correct);
+        background: var(--background-specified-correct);
+        color: var(--color-specified-correct);
+    }
+
+    100% {
+        transform: rotateX(0deg);
+        border-color: var(--background-specified-correct);
+        background: var(--background-specified-correct);
+        color: var(--color-specified-correct);
+    }
+}
+
+@keyframes appearPresent {
     0% {
         transform: rotateX(0deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
+    }
+
+    40% {
+        transform: rotateX(90deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
+    }
+
+    41% {
+        transform: rotateX(90deg);
+        border-color: var(--background-specified-present);
+        background: var(--background-specified-present);
+        color: var(--color-specified-present);
+    }
+
+    100% {
+        transform: rotateX(0deg);
+        border-color: var(--background-specified-present);
+        background: var(--background-specified-present);
+        color: var(--color-specified-present);
+    }
+}
+
+@keyframes appearAbsent {
+    0% {
+        transform: rotateX(0deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
+    }
+
+    40% {
+        transform: rotateX(90deg);
+        border-color: var(--background-unspecified);
+        background: transparent;
+        color: var(--color-unspecified);
+    }
+
+    41% {
+        transform: rotateX(90deg);
+        border-color: var(--background-specified-absent);
+        background: var(--background-specified-absent);
+        color: var(--color-specified-absent);
+    }
+
+    100% {
+        transform: rotateX(0deg);
+        border-color: var(--background-specified-absent);
+        background: var(--background-specified-absent);
+        color: var(--color-specified-absent);
     }
 }
