@@ -35,6 +35,8 @@ class Comparator
 
 	public guess(word: string): Letter[] | string
 	{
+		word = word.toLowerCase();
+
 		if (word.length < this.wordLength)
 		{
 			return "Not enough letters";

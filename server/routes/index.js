@@ -23,6 +23,7 @@ class Comparator {
         return this._vocabulary[this._wordIndex];
     }
     guess(word) {
+        word = word.toLowerCase();
         if (word.length < this.wordLength) {
             return "Not enough letters";
         }

@@ -5,7 +5,26 @@
     "removeComments": false,
     "sourceMap": true,
     "target": "es6",
-    "outDir": "../../server/routes"
+    "outDir": "../../server/routes",
+    "strict": true,
+
+    "alwaysStrict": true,
+    "skipLibCheck": true,
+
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noErrorTruncation": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false
   },
   "exclude": [
     "node_modules",
