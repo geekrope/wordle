@@ -59,15 +59,15 @@ body, html {
 }
 
 .specifiedCorrect {
-    animation: appearCorrect 1s forwards;
+    animation: appearCorrect 0.8s forwards;
 }
 
 .specifiedPresent {
-    animation: appearPresent 1s forwards;
+    animation: appearPresent 0.8s forwards;
 }
 
 .specifiedAbsent {
-    animation: appearAbsent 1s forwards;
+    animation: appearAbsent 0.8s forwards;
 }
 
 @keyframes appearCorrect {

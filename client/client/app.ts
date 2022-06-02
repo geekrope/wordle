@@ -2,11 +2,22 @@
 const rowsCount = 6;
 const animationDelay = 0.2;
 const alphabet = /^[A-Za-z0-9]*$/;
+const statisticsId = "statistics";
+const guessesId = "guesses";
 
 type letterType = "correct" | "present" | "absent";
 
 let currentRow = 0;
 let currentColumn = 0;
+
+interface UserStatistics
+{
+	correctAnswers: number;
+	totalAnswers: number;
+	guessesDistribution: number[];
+	currentStreak: number;
+	maxStreak: number;
+}
 
 function getLetterId(column: number, row: number): string
 {
@@ -49,7 +60,35 @@ function createBoard(): HTMLDivElement
 	return container;
 }
 
-function submitCurrentRow()
+function createBlankStatistics(): UserStatistics
+{
+	return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+}
+
+function getStatistics(): UserStatistics
+{
+	const stats = localStorage.getItem(statisticsId);
+
+	if (stats)
+	{
+		return JSON.parse(stats);
+	}
+	else
+	{
+		const blank = createBlankStatistics();
+
+		setStatistics(blank);
+
+		return blank;
+	}
+}
+
+function setStatistics(stats: UserStatistics)
+{
+	localStorage.setItem(statisticsId, JSON.stringify(stats));
+}
+
+async function submitCurrentRow(): Promise<boolean | string>
 {
 	let word = "";
 
@@ -63,62 +102,78 @@ function submitCurrentRow()
 		}
 	}
 
-	console.log(word);
+	const text = await (await fetch(`/guess?word=${word}`, { method: "POST" })).text();
 
-	const response = fetch(`/guess?word=${word}`, { method: "POST" });
-
-	response.then((response) =>
+	try
 	{
-		response.text().then((text) =>
+		const specifiedWord = JSON.parse(text) as { type: letterType, _charCode: number }[];
+
+		let correctLetters = 0;
+
+		specifiedWord.forEach((value, index) =>
 		{
-			try
-			{
-				const specifiedWord = JSON.parse(text) as { type: letterType, _charCode: number }[];
+			const letterElement = getLetter(index, currentRow);
 
-				specifiedWord.forEach((value, index) =>
+			if (letterElement)
+			{
+				switch (value.type)
 				{
-					const letterElement = getLetter(index, currentRow);
+					case "correct":
+						letterElement.className = "letterContainer specifiedLetter specifiedCorrect";
+						correctLetters++;
+						break;
+					case "present":
+						letterElement.className = "letterContainer specifiedLetter specifiedPresent";
+						break;
+					case "absent":
+						letterElement.className = "letterContainer specifiedLetter specifiedAbsent";
+						break;
+					default:
+						throw new Error("Unknown letter type");
+				}
 
-					if (letterElement)
-					{
-						switch (value.type)
-						{
-							case "correct":
-								letterElement.className = "letterContainer specifiedLetter specifiedCorrect";
-								break;
-							case "present":
-								letterElement.className = "letterContainer specifiedLetter specifiedPresent";
-								break;
-							case "absent":
-								letterElement.className = "letterContainer specifiedLetter specifiedAbsent";
-								break;
-							default:
-								throw new Error("Unknown letter type");
-						}
-
-						letterElement.style.animationDelay = index * animationDelay + "s";
-					}
-				})
-
-				currentColumn = 0;
-				currentRow++;
+				letterElement.style.animationDelay = index * animationDelay + "s";
 			}
-			catch
-			{
-				window.alert(text);
-			}
-		})
-	})
+		});
+
+		return correctLetters == lettersCount;
+	}
+	catch
+	{
+		return text;
+	}
 }
 
-window.addEventListener("load", () =>
+function winHandler()
 {
-	document.body.appendChild(createBoard());
-});
+	alert("biungo");
 
-window.addEventListener("keydown", (event) =>
+	let userStats = getStatistics();
+
+	userStats.correctAnswers++;
+	userStats.totalAnswers++;
+	userStats.guessesDistribution[currentRow]++;
+	userStats.currentStreak++;
+	userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
+
+	setStatistics(userStats);
+}
+
+function loseHandler()
 {
-	const char = String.fromCharCode(event.keyCode);
+	alert("jsdngiksdkg");
+
+	let userStats = getStatistics();
+
+	userStats.totalAnswers++;
+	userStats.currentStreak = 0;
+
+	setStatistics(userStats);
+}
+
+function keyHandler(charCode: number)
+{
+	const char = String.fromCharCode(charCode);
 	const letterElement = getLetter(currentColumn, currentRow);
 
 	if (alphabet.test(char) && letterElement && (currentColumn != lettersCount - 1 || letterElement.innerHTML.length == 0))
@@ -126,11 +181,35 @@ window.addEventListener("keydown", (event) =>
 		letterElement.innerHTML = char;
 		currentColumn = Math.min(currentColumn + 1, lettersCount - 1);
 	}
-	else if (event.keyCode == 13) //enter
+	else if (charCode == 13) //enter
 	{
-		submitCurrentRow();
+		const win = submitCurrentRow();
+
+		win.then((value) =>
+		{
+			if (typeof value == "boolean")
+			{
+				if (value)
+				{
+					winHandler();
+				}
+				else if (currentRow + 1 >= rowsCount)
+				{
+					loseHandler();
+				}
+				else
+				{
+					currentColumn = 0;
+					currentRow++;
+				}
+			}
+			else
+			{
+				window.alert(value);
+			}
+		})
 	}
-	else if (event.keyCode == 8 && currentColumn - 1 >= 0 && letterElement && letterElement.innerHTML.length == 0) //backspace
+	else if (charCode == 8 && currentColumn - 1 >= 0 && letterElement && letterElement.innerHTML.length == 0) //backspace
 	{
 		const editedElement = getLetter(currentColumn - 1, currentRow);
 
@@ -141,8 +220,18 @@ window.addEventListener("keydown", (event) =>
 
 		currentColumn--;
 	}
-	else if (event.keyCode == 8 && letterElement)
+	else if (charCode == 8 && letterElement)
 	{
 		letterElement.innerHTML = "";
 	}
+}
+
+window.addEventListener("load", () =>
+{
+	document.body.appendChild(createBoard());
+});
+
+window.addEventListener("keydown", (event) =>
+{
+	keyHandler(event.keyCode);
 });
