@@ -171,15 +171,36 @@ function loseHandler()
 	setStatistics(userStats);
 }
 
+function setSelectedLetterStyle(letterElement: HTMLElement)
+{
+	letterElement.animate([
+		{ transform: "scale(1)" },
+		{ transform: "scale(1.1)" },
+		{ transform: "scale(1)" },
+	], {
+		duration: 200,
+		iterations: 1
+	});
+
+	letterElement.style.borderColor = "var(--border-selected-unspecified)";
+}
+
+function setUnselectedLetterStyle(letterElement: HTMLElement)
+{
+	letterElement.style.borderColor = "var(--border-unspecified)";
+}
+
+
 function keyHandler(charCode: number)
 {
 	const char = String.fromCharCode(charCode);
 	const letterElement = getLetter(currentColumn, currentRow);
 
-	if (alphabet.test(char) && letterElement && (currentColumn != lettersCount - 1 || letterElement.innerHTML.length == 0))
+	if (alphabet.test(char) && letterElement && (currentColumn != lettersCount - 1 || letterElement.innerHTML.length == 0)) //set letter
 	{
 		letterElement.innerHTML = char;
 		currentColumn = Math.min(currentColumn + 1, lettersCount - 1);
+		setSelectedLetterStyle(letterElement);		
 	}
 	else if (charCode == 13) //enter
 	{
@@ -216,13 +237,14 @@ function keyHandler(charCode: number)
 		if (editedElement)
 		{
 			editedElement.innerHTML = "";
-		}
-
-		currentColumn--;
+			setUnselectedLetterStyle(editedElement);
+			currentColumn--;		
+		}		
 	}
-	else if (charCode == 8 && letterElement)
+	else if (charCode == 8 && letterElement) //backspace last letter
 	{
 		letterElement.innerHTML = "";
+		setUnselectedLetterStyle(letterElement);
 	}
 }
 
@@ -235,3 +257,5 @@ window.addEventListener("keydown", (event) =>
 {
 	keyHandler(event.keyCode);
 });
+
+console.log("zzzzzzzz");

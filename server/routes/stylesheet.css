@@ -8,7 +8,8 @@ body, html {
 
 :root {
     --size: max(min(1px, calc(100vw / 330)), calc(32px / 62));
-    --background-unspecified: #d3d6da;
+    --border-unspecified: #d3d6da;
+    --border-selected-unspecified: #878a8c;
     --color-unspecified: #000000;
     --background-specified-correct: #6aaa64;
     --color-specified-correct: #ffffff;
@@ -48,13 +49,13 @@ body, html {
 }
 
 .unspecifiedLetter {
-    border-color: var(--background-unspecified);
+    border-color: var(--border-unspecified);
     color: var(--color-unspecified);
 }
 
 .specifiedLetter {
     transform-style: preserve-3d;
-    border-color: var(--background-unspecified);
+    border-color: var(--border-unspecified);
     color: var(--color-unspecified);
 }
 
@@ -73,14 +74,14 @@ body, html {
 @keyframes appearCorrect {
     0% {
         transform: rotateX(0deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
 
     40% {
         transform: rotateX(90deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
@@ -103,14 +104,14 @@ body, html {
 @keyframes appearPresent {
     0% {
         transform: rotateX(0deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
 
     40% {
         transform: rotateX(90deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
@@ -133,14 +134,14 @@ body, html {
 @keyframes appearAbsent {
     0% {
         transform: rotateX(0deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
 
     40% {
         transform: rotateX(90deg);
-        border-color: var(--background-unspecified);
+        border-color: var(--border-unspecified);
         background: transparent;
         color: var(--color-unspecified);
     }
