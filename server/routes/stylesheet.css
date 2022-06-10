@@ -8,6 +8,7 @@ body, html {
 
 :root {
     --size: max(min(1px, calc(100vw / 330)), calc(32px / 62));
+    --key-size: max(min(1px, calc(100vw / 500)));
     --border-unspecified: #d3d6da;
     --border-selected-unspecified: #878a8c;
     --color-unspecified: #000000;
@@ -17,6 +18,7 @@ body, html {
     --color-specified-present: #ffffff;
     --background-specified-absent: #787c7e;
     --color-specified-absent: #ffffff;
+    --default-font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
 }
 
 .flex {
@@ -26,26 +28,27 @@ body, html {
 
 .rowContainer {
     flex-flow: row;
-    width: calc(var(--size) * 330);
     height: min-content;
 }
 
 .columnContainer {
     flex-flow: column;
     width: min-content;
-    height: calc(var(--size) * 400);
+}
+
+.innerCentralAlign {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .letterContainer {
-    display: flex;
     border: 2px solid;
     font-size: 32px;
-    font-weight: bold;
-    font-family: Arial;
+    font-weight: 700;
+    font-family: var(--default-font-family);
     width: calc(var(--size) * 62 - 4px);
     height: calc(var(--size) * 62 - 4px);
-    justify-content: center;
-    align-items: center;
 }
 
 .unspecifiedLetter {
@@ -159,4 +162,17 @@ body, html {
         background: var(--background-specified-absent);
         color: var(--color-specified-absent);
     }
+}
+
+.keyStyle {
+    width: calc(var(--key-size) * 43);
+    min-width:max-content;
+    height: 58px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--default-font-family);
+    background: var(--border-unspecified);
+    border-radius: 4px;
+    user-select: none;
+    cursor: pointer;
 }

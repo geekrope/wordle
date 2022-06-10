@@ -35,6 +35,7 @@
   <ItemGroup>
     <None Include="app.ts" />
     <None Include="routes\index.ts" />
+    <Content Include="routes\backspace.svg" />
     <Content Include="routes\index.html" />
     <Content Include="routes\stylesheet.css">
       <SubType>Code</SubType>
