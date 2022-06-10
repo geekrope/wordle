@@ -3,7 +3,12 @@ import fs = require('fs');
 
 const router = express.Router();
 
-type letterType = "correct" | "present" | "absent";
+enum letterType
+{
+	correct = 2,
+	present = 1,
+	absent = 0
+}
 
 class Letter
 {
@@ -66,7 +71,7 @@ class Comparator
 
 				if (orignalChar.code == guessedChar.code)
 				{
-					letters[guessedChar.index] = new Letter(guessedChar.code, "correct");
+					letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
 
 					currentWord.splice(index, 1);
 					guessedWord.splice(index, 1);
@@ -84,7 +89,7 @@ class Comparator
 
 				if (currentWord.findIndex((value) => { return value.code == guessedChar.code; }) >= 0)
 				{
-					letters[guessedChar.index] = new Letter(guessedChar.code, "present");
+					letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
 
 					currentWord.splice(index, 1);
 					guessedWord.splice(index, 1);
@@ -100,7 +105,7 @@ class Comparator
 			{
 				const guessedChar = guessedWord[index];
 
-				letters[guessedChar.index] = new Letter(guessedChar.code, "absent");
+				letters[guessedChar.index] = new Letter(guessedChar.code, letterType.absent);
 			}
 
 			return letters;

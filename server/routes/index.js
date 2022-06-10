@@ -3,6 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const fs = require("fs");
 const router = express.Router();
+var letterType;
+(function (letterType) {
+    letterType[letterType["correct"] = 2] = "correct";
+    letterType[letterType["present"] = 1] = "present";
+    letterType[letterType["absent"] = 0] = "absent";
+})(letterType || (letterType = {}));
 class Letter {
     constructor(charCode, type) {
         this._charCode = charCode;
@@ -43,7 +49,7 @@ class Comparator {
                 const orignalChar = currentWord[index];
                 const guessedChar = guessedWord[index];
                 if (orignalChar.code == guessedChar.code) {
-                    letters[guessedChar.index] = new Letter(guessedChar.code, "correct");
+                    letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
                     currentWord.splice(index, 1);
                     guessedWord.splice(index, 1);
                 }
@@ -55,7 +61,7 @@ class Comparator {
             for (let index = 0; index < currentWord.length && index < guessedWord.length;) {
                 const guessedChar = guessedWord[index];
                 if (currentWord.findIndex((value) => { return value.code == guessedChar.code; }) >= 0) {
-                    letters[guessedChar.index] = new Letter(guessedChar.code, "present");
+                    letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
                     currentWord.splice(index, 1);
                     guessedWord.splice(index, 1);
                 }
@@ -66,7 +72,7 @@ class Comparator {
             //absent
             for (let index = 0; index < currentWord.length && index < guessedWord.length; index++) {
                 const guessedChar = guessedWord[index];
-                letters[guessedChar.index] = new Letter(guessedChar.code, "absent");
+                letters[guessedChar.index] = new Letter(guessedChar.code, letterType.absent);
             }
             return letters;
         }

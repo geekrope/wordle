@@ -14,6 +14,12 @@ const animationDelay = 0.2;
 const alphabet = /^[A-Za-z0-9]*$/;
 const statisticsId = "statistics";
 const guessesId = "guesses";
+var letterType;
+(function (letterType) {
+    letterType[letterType["correct"] = 2] = "correct";
+    letterType[letterType["present"] = 1] = "present";
+    letterType[letterType["absent"] = 0] = "absent";
+})(letterType || (letterType = {}));
 const keyboardRow1 = [
     { content: undefined, code: 81 },
     { content: undefined, code: 87 },
@@ -48,6 +54,7 @@ const keyboardRow3 = [
     { content: undefined, code: 77 },
     { content: "@/backspace.svg", code: 8, flex: 1.5 }
 ];
+let keyboardMap = new Map();
 let currentRow = 0;
 let currentColumn = 0;
 function toUpper(code) {
@@ -181,7 +188,7 @@ function checkCurrentRow() {
             specifiedWord.forEach((value, index) => {
                 setSpecifiedLetterStyle(index, currentRow, value.type);
                 setKeyboardLetterStyle(toUpper(value._charCode), value.type);
-                if (value.type == "correct") {
+                if (value.type == letterType.correct) {
                     correctLetters++;
                 }
             });
@@ -210,13 +217,13 @@ function setSpecifiedLetterStyle(index, row, type) {
     const letterElement = getLetter(index, row);
     if (letterElement) {
         switch (type) {
-            case "correct":
+            case letterType.correct:
                 letterElement.className = "innerCentralAlign letterContainer specifiedLetter specifiedCorrect";
                 break;
-            case "present":
+            case letterType.present:
                 letterElement.className = "innerCentralAlign letterContainer specifiedLetter specifiedPresent";
                 break;
-            case "absent":
+            case letterType.absent:
                 letterElement.className = "innerCentralAlign letterContainer specifiedLetter specifiedAbsent";
                 break;
             default:
@@ -227,20 +234,21 @@ function setSpecifiedLetterStyle(index, row, type) {
 }
 function setKeyboardLetterStyle(code, type) {
     const key = getKey(code);
-    if (key) {
+    if (((keyboardMap.has(code) && keyboardMap.get(code) < type) || !keyboardMap.has(code)) && key) {
         switch (type) {
-            case "correct":
+            case letterType.correct:
                 key.style.background = "var(--background-specified-correct)";
                 break;
-            case "present":
+            case letterType.present:
                 key.style.background = "var(--background-specified-present)";
                 break;
-            case "absent":
+            case letterType.absent:
                 key.style.background = "var(--background-specified-absent)";
                 break;
             default:
                 throw new Error("Unknown letter type");
         }
+        keyboardMap.set(code, type);
     }
 }
 function keyHandler(charCode) {
