@@ -7,7 +7,7 @@ const debug = require('debug')('my express app');
 const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
-app.use(express.static(path.join(__dirname, 'routes')));
+app.use(express.static(path.join(__dirname, 'routes/public')));
 app.use('/', index_1.default);
 app.use((_req, _res, next) => {
     const err = new Error('Not Found');

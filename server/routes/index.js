@@ -46,9 +46,9 @@ class Comparator {
             }
             //correct
             for (let index = 0; index < currentWord.length && index < guessedWord.length;) {
-                const orignalChar = currentWord[index];
                 const guessedChar = guessedWord[index];
-                if (orignalChar.code == guessedChar.code) {
+                const originalChar = currentWord.find((value) => { return value.index == guessedChar.index; });
+                if (originalChar && originalChar.code == guessedChar.code) {
                     letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
                     currentWord.splice(index, 1);
                     guessedWord.splice(index, 1);
@@ -60,9 +60,10 @@ class Comparator {
             //present
             for (let index = 0; index < currentWord.length && index < guessedWord.length;) {
                 const guessedChar = guessedWord[index];
-                if (currentWord.findIndex((value) => { return value.code == guessedChar.code; }) >= 0) {
+                const charIndexInWord = currentWord.findIndex((value) => { return value.code == guessedChar.code; });
+                if (charIndexInWord > -1) {
                     letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
-                    currentWord.splice(index, 1);
+                    currentWord.splice(charIndexInWord, 1);
                     guessedWord.splice(index, 1);
                 }
                 else {

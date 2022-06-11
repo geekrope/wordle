@@ -35,9 +35,9 @@
   <ItemGroup>
     <None Include="app.ts" />
     <None Include="routes\index.ts" />
-    <Content Include="routes\backspace.svg" />
-    <Content Include="routes\index.html" />
-    <Content Include="routes\stylesheet.css">
+    <Content Include="routes\public\backspace.svg" />
+    <Content Include="routes\public\index.html" />
+    <Content Include="routes\public\stylesheet.css">
       <SubType>Code</SubType>
     </Content>
     <Content Include="routes\vocabulary.json" />
@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="routes\" />
+    <Folder Include="routes\public\" />
     <Folder Include="views\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
