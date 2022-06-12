@@ -37,6 +37,7 @@
     <None Include="routes\index.ts" />
     <Content Include="routes\public\backspace.svg" />
     <Content Include="routes\public\index.html" />
+    <Content Include="routes\public\KarnakPro-Bold.ttf" />
     <Content Include="routes\public\stylesheet.css">
       <SubType>Code</SubType>
     </Content>

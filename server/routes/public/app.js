@@ -14,6 +14,7 @@ const animationDelay = 0.2;
 const alphabet = /^[A-Za-z0-9]*$/;
 const statisticsId = "statistics";
 const guessesId = "guesses";
+const wrapperId = "wrapper";
 var letterType;
 (function (letterType) {
     letterType[letterType["correct"] = 2] = "correct";
@@ -55,6 +56,7 @@ const keyboardRow3 = [
     { content: "@/backspace.svg", code: 8, flex: 1.5 }
 ];
 let keyboardMap = new Map();
+let keysLocked = false;
 let currentRow = 0;
 let currentColumn = 0;
 function toUpper(code) {
@@ -132,6 +134,7 @@ function createKeyboard() {
     const container = document.createElement("div");
     container.className = "flex columnContainer";
     container.style.height = "200px";
+    container.style.paddingBottom = "10px";
     container.appendChild(createKeyboardRow(keyboardRow1));
     container.appendChild(createKeyboardRow(keyboardRow2));
     container.appendChild(createKeyboardRow(keyboardRow3));
@@ -162,7 +165,7 @@ function getCurrentWord() {
     return word;
 }
 function winHandler() {
-    alert("biungo");
+    alert("bingo");
     let userStats = getStatistics();
     userStats.correctAnswers++;
     userStats.totalAnswers++;
@@ -170,6 +173,7 @@ function winHandler() {
     userStats.currentStreak++;
     userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
     setStatistics(userStats);
+    keysLocked = true;
 }
 function loseHandler() {
     alert("jsdngiksdkg");
@@ -177,9 +181,11 @@ function loseHandler() {
     userStats.totalAnswers++;
     userStats.currentStreak = 0;
     setStatistics(userStats);
+    keysLocked = true;
 }
 function checkCurrentRow() {
     return __awaiter(this, void 0, void 0, function* () {
+        keysLocked = true;
         const word = getCurrentWord();
         const text = yield (yield fetch(`/guess?word=${word}`, { method: "POST" })).text();
         try {
@@ -192,9 +198,11 @@ function checkCurrentRow() {
                     correctLetters++;
                 }
             });
+            keysLocked = false;
             return correctLetters == lettersCount;
         }
         catch (_a) {
+            keysLocked = false;
             return text;
         }
     });
@@ -252,45 +260,50 @@ function setKeyboardLetterStyle(code, type) {
     }
 }
 function keyHandler(charCode) {
-    const char = String.fromCharCode(charCode);
-    const letterElement = getLetter(currentColumn, currentRow);
-    if (alphabet.test(char) && currentColumn < lettersCount && letterElement) {
-        letterElement.innerHTML = char;
-        currentColumn++;
-        setSelectedLetterStyle(letterElement);
-    }
-    else if (charCode == 13) {
-        const win = checkCurrentRow();
-        win.then((value) => {
-            if (typeof value == "boolean") {
-                if (value) {
-                    winHandler();
-                }
-                else if (currentRow + 1 >= rowsCount) {
-                    loseHandler();
+    if (!keysLocked) {
+        const char = String.fromCharCode(charCode);
+        const letterElement = getLetter(currentColumn, currentRow);
+        if (alphabet.test(char) && currentColumn < lettersCount && letterElement) {
+            letterElement.innerHTML = char;
+            currentColumn++;
+            setSelectedLetterStyle(letterElement);
+        }
+        else if (charCode == 13) {
+            const win = checkCurrentRow();
+            win.then((value) => {
+                if (typeof value == "boolean") {
+                    if (value) {
+                        winHandler();
+                    }
+                    else if (currentRow + 1 >= rowsCount) {
+                        loseHandler();
+                    }
+                    else {
+                        currentColumn = 0;
+                        currentRow++;
+                    }
                 }
                 else {
-                    currentColumn = 0;
-                    currentRow++;
+                    window.alert(value);
                 }
+            });
+        }
+        else if (charCode == 8 && currentColumn - 1 > -1) {
+            const editedElement = getLetter(currentColumn - 1, currentRow);
+            if (editedElement) {
+                editedElement.innerHTML = "";
+                setUnselectedLetterStyle(editedElement);
+                currentColumn--;
             }
-            else {
-                window.alert(value);
-            }
-        });
-    }
-    else if (charCode == 8 && currentColumn - 1 > -1) {
-        const editedElement = getLetter(currentColumn - 1, currentRow);
-        if (editedElement) {
-            editedElement.innerHTML = "";
-            setUnselectedLetterStyle(editedElement);
-            currentColumn--;
         }
     }
 }
 window.addEventListener("load", () => {
-    document.body.appendChild(createBoard());
-    document.body.appendChild(createKeyboard());
+    const wrapper = document.getElementById(wrapperId);
+    if (wrapper) {
+        wrapper.appendChild(createBoard());
+        wrapper.appendChild(createKeyboard());
+    }
 });
 window.addEventListener("keydown", (event) => {
     keyHandler(event.keyCode);

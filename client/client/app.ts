@@ -4,6 +4,7 @@ const animationDelay = 0.2;
 const alphabet = /^[A-Za-z0-9]*$/;
 const statisticsId = "statistics";
 const guessesId = "guesses";
+const wrapperId = "wrapper";
 
 enum letterType
 {
@@ -48,6 +49,7 @@ const keyboardRow3: { content: string | undefined, code: number, flex?: number }
 ];
 
 let keyboardMap: Map<number, letterType> = new Map<number, letterType>();
+let keysLocked = false;
 
 let currentRow = 0;
 let currentColumn = 0;
@@ -178,6 +180,7 @@ function createKeyboard(): HTMLDivElement
 	const container = document.createElement("div");
 	container.className = "flex columnContainer";
 	container.style.height = "200px";
+	container.style.paddingBottom = "10px";
 
 	container.appendChild(createKeyboardRow(keyboardRow1));
 	container.appendChild(createKeyboardRow(keyboardRow2));
@@ -228,7 +231,7 @@ function getCurrentWord(): string
 
 function winHandler(): void
 {
-	alert("biungo");
+	alert("bingo");
 
 	let userStats = getStatistics();
 
@@ -239,6 +242,8 @@ function winHandler(): void
 	userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
 
 	setStatistics(userStats);
+
+	keysLocked = true;
 }
 
 function loseHandler(): void
@@ -251,10 +256,14 @@ function loseHandler(): void
 	userStats.currentStreak = 0;
 
 	setStatistics(userStats);
+
+	keysLocked = true;
 }
 
 async function checkCurrentRow(): Promise<boolean | string>
 {
+	keysLocked = true;
+
 	const word = getCurrentWord();
 
 	const text = await (await fetch(`/guess?word=${word}`, { method: "POST" })).text();
@@ -276,10 +285,14 @@ async function checkCurrentRow(): Promise<boolean | string>
 			}
 		});
 
+		keysLocked = false;
+
 		return correctLetters == lettersCount;
 	}
 	catch
 	{
+		keysLocked = false;
+
 		return text;
 	}
 }
@@ -355,61 +368,69 @@ function setKeyboardLetterStyle(code: number, type: letterType)
 
 function keyHandler(charCode: number): void
 {
-	const char = String.fromCharCode(charCode);
-	const letterElement = getLetter(currentColumn, currentRow);
-
-	if (alphabet.test(char) && currentColumn < lettersCount && letterElement)
+	if (!keysLocked)
 	{
-		letterElement.innerHTML = char;
-		currentColumn++;
+		const char = String.fromCharCode(charCode);
+		const letterElement = getLetter(currentColumn, currentRow);
 
-		setSelectedLetterStyle(letterElement);
-	}
-	else if (charCode == 13)
-	{
-		const win = checkCurrentRow();
-
-		win.then((value) =>
+		if (alphabet.test(char) && currentColumn < lettersCount && letterElement)
 		{
-			if (typeof value == "boolean")
+			letterElement.innerHTML = char;
+			currentColumn++;
+
+			setSelectedLetterStyle(letterElement);
+		}
+		else if (charCode == 13)
+		{
+			const win = checkCurrentRow();
+
+			win.then((value) =>
 			{
-				if (value)
+				if (typeof value == "boolean")
 				{
-					winHandler();
-				}
-				else if (currentRow + 1 >= rowsCount)
-				{
-					loseHandler();
+					if (value)
+					{
+						winHandler();
+					}
+					else if (currentRow + 1 >= rowsCount)
+					{
+						loseHandler();
+					}
+					else
+					{
+						currentColumn = 0;
+						currentRow++;
+					}
 				}
 				else
 				{
-					currentColumn = 0;
-					currentRow++;
+					window.alert(value);
 				}
-			}
-			else
-			{
-				window.alert(value);
-			}
-		})
-	}
-	else if (charCode == 8 && currentColumn - 1 > -1)
-	{
-		const editedElement = getLetter(currentColumn - 1, currentRow);
-
-		if (editedElement)
-		{
-			editedElement.innerHTML = "";
-			setUnselectedLetterStyle(editedElement);
-			currentColumn--;
+			})
 		}
-	}
+		else if (charCode == 8 && currentColumn - 1 > -1)
+		{
+			const editedElement = getLetter(currentColumn - 1, currentRow);
+
+			if (editedElement)
+			{
+				editedElement.innerHTML = "";
+				setUnselectedLetterStyle(editedElement);
+				currentColumn--;
+			}
+		}
+	}	
 }
 
 window.addEventListener("load", () =>
 {
-	document.body.appendChild(createBoard());
-	document.body.appendChild(createKeyboard());
+	const wrapper = document.getElementById(wrapperId);
+
+	if (wrapper)
+	{
+		wrapper.appendChild(createBoard());
+		wrapper.appendChild(createKeyboard());
+	}
 });
 
 window.addEventListener("keydown", (event) =>
