@@ -50,7 +50,7 @@ const keyboardRow3 = [
     { content: undefined, code: 90 },
     { content: undefined, code: 88 },
     { content: undefined, code: 67 },
-    { content: undefined, code: 68 },
+    { content: undefined, code: 86 },
     { content: undefined, code: 66 },
     { content: undefined, code: 78 },
     { content: undefined, code: 77 },
@@ -75,10 +75,17 @@ function getKeyId(code) {
 function getKey(code) {
     return document.getElementById(getKeyId(code));
 }
+function getRowId(index) {
+    return "row_" + index;
+}
+function getRow(index) {
+    return document.getElementById(getRowId(index));
+}
 function createRow(row) {
     const container = document.createElement("div");
     container.className = "flex rowContainer";
     container.style.width = "calc(var(--size) * 330)";
+    container.id = getRowId(row);
     for (let column = 0; column < lettersCount; column++) {
         const letterContainer = document.createElement("div");
         letterContainer.className = "innerCentralAlign letterContainer unspecifiedLetter";
@@ -92,7 +99,9 @@ function createBoard() {
     container.className = "flex columnContainer";
     container.style.height = "calc(var(--size) * 400)";
     for (let row = 0; row < rowsCount; row++) {
-        container.appendChild(createRow(row));
+        const rowElement = createRow(row);
+        rowElement.id = getRowId(row);
+        container.appendChild(rowElement);
     }
     return container;
 }
@@ -112,6 +121,22 @@ function createAlert(text) {
 }
 function createBlankStatistics() {
     return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+}
+function shakeCurrentRow() {
+    const row = getRow(currentRow);
+    if (row) {
+        row.animate([
+            { transform: "translateX(-1px)", offset: 0.1 },
+            { transform: "translateX(2px)", offset: 0.2 },
+            { transform: "translateX(-4px)", offset: 0.3 },
+            { transform: "translateX(4px)", offset: 0.4 },
+            { transform: "translateX(-4px)", offset: 0.5 },
+            { transform: "translateX(4px)", offset: 0.6 },
+            { transform: "translateX(-4px)", offset: 0.7 },
+            { transform: "translateX(2px)", offset: 0.8 },
+            { transform: "translateX(-1px)", offset: 0.9 }
+        ], 600);
+    }
 }
 function createKey(content, action) {
     const container = document.createElement("div");
@@ -300,6 +325,7 @@ function keyHandler(charCode) {
                 }
                 else {
                     window.alert(value);
+                    shakeCurrentRow();
                 }
             });
         }

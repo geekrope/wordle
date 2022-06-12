@@ -11,6 +11,9 @@ app.use(express.static(path.join(__dirname, 'routes/public')));
 app.use('/', index_1.default);
 app.use((_req, _res, next) => {
     const err = new Error('Not Found');
+    Object.defineProperty(err, 'status', {
+        get: () => { return 404; }
+    });
     next(err);
 });
 if (app.get('env') === 'development') {

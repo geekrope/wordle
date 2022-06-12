@@ -42,7 +42,7 @@ const keyboardRow3: { content: string | undefined, code: number, flex?: number }
 	{ content: undefined, code: 90 },
 	{ content: undefined, code: 88 },
 	{ content: undefined, code: 67 },
-	{ content: undefined, code: 68 },
+	{ content: undefined, code: 86 },
 	{ content: undefined, code: 66 },
 	{ content: undefined, code: 78 },
 	{ content: undefined, code: 77 },
@@ -89,11 +89,22 @@ function getKey(code: number): HTMLElement | null
 	return document.getElementById(getKeyId(code));
 }
 
+function getRowId(index: number): string
+{
+	return "row_" + index;
+}
+
+function getRow(index: number): HTMLElement | null
+{
+	return document.getElementById(getRowId(index));
+}
+
 function createRow(row: number): HTMLDivElement
 {
 	const container = document.createElement("div");
 	container.className = "flex rowContainer";
 	container.style.width = "calc(var(--size) * 330)";
+	container.id = getRowId(row);
 
 	for (let column = 0; column < lettersCount; column++)
 	{
@@ -116,7 +127,10 @@ function createBoard(): HTMLDivElement
 
 	for (let row = 0; row < rowsCount; row++)
 	{
-		container.appendChild(createRow(row));
+		const rowElement = createRow(row);
+		rowElement.id = getRowId(row);
+
+		container.appendChild(rowElement);
 	}
 
 	return container;
@@ -131,7 +145,7 @@ function createAlert(text: string): HTMLDivElement
 	const animation = alert.animate([
 		{ opacity: 1, offset: 0 },
 		{ opacity: 1, offset: 0.7 },
-		{ opacity: 0, offset: 1, easing : "cubic-bezier(0.645, 0.045, 0.355, 1)" }
+		{ opacity: 0, offset: 1, easing: "cubic-bezier(0.645, 0.045, 0.355, 1)" }
 	], { duration: 1000 });
 
 	animation.onfinish = () =>
@@ -145,6 +159,26 @@ function createAlert(text: string): HTMLDivElement
 function createBlankStatistics(): UserStatistics
 {
 	return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+}
+
+function shakeCurrentRow(): void
+{
+	const row = getRow(currentRow);
+
+	if (row)
+	{
+		row.animate([
+			{ transform: "translateX(-1px)", offset: 0.1 },
+			{ transform: "translateX(2px)", offset: 0.2 },
+			{ transform: "translateX(-4px)", offset: 0.3 },
+			{ transform: "translateX(4px)", offset: 0.4 },
+			{ transform: "translateX(-4px)", offset: 0.5 },
+			{ transform: "translateX(4px)", offset: 0.6 },
+			{ transform: "translateX(-4px)", offset: 0.7 },
+			{ transform: "translateX(2px)", offset: 0.8 },
+			{ transform: "translateX(-1px)", offset: 0.9 }
+		], 600)
+	}
 }
 
 function createKey(content: string, action: () => void): HTMLDivElement
@@ -426,6 +460,8 @@ function keyHandler(charCode: number): void
 				else
 				{
 					window.alert(value);
+
+					shakeCurrentRow();
 				}
 			})
 		}
@@ -459,12 +495,12 @@ window.addEventListener("keydown", (event) =>
 	keyHandler(event.keyCode);
 });
 
-window.alert = (message) =>
+window.alert = (message: any) =>
 {
 	const alertsContainer = document.getElementById(alertsContainerId);
 
 	if (alertsContainer)
 	{
 		alertsContainer.insertBefore(createAlert(message), alertsContainer.firstChild);
-	}	
+	}
 }

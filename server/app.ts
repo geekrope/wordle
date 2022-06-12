@@ -14,32 +14,42 @@ app.use(express.static(path.join(__dirname, 'routes/public')));
 
 app.use('/', routes);
 
-app.use((_req, _res, next) => {
-    const err = new Error('Not Found');
-    next(err);
+app.use((_req, _res, next) =>
+{
+	const err = new Error('Not Found');
+
+	Object.defineProperty(err, 'status', {
+		get: () => { return 404 }
+	});
+
+	next(err);
 });
 
-if (app.get('env') === 'development') {
-    app.use((err: any, _req: any, res: any, _next: any) => {
-        res.status(err['status'] || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
-    });
+if (app.get('env') === 'development')
+{
+	app.use((err: any, _req: any, res: any, _next: any) =>
+	{
+		res.status(err['status'] || 500);
+		res.render('error', {
+			message: err.message,
+			error: err
+		});
+	});
 }
 
 
-app.use((err: any, _req: any, res: any, _next: any) => {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+app.use((err: any, _req: any, res: any, _next: any) =>
+{
+	res.status(err.status || 500);
+	res.render('error', {
+		message: err.message,
+		error: {}
+	});
 });
 
 app.set('port', process.env["PORT"] || 3000);
 
-const server = app.listen(app.get('port'), function () {
-    debug(`Express server listening on port ${ (server.address() as AddressInfo).port }`);
+const server = app.listen(app.get('port'), function ()
+{
+	debug(`Express server listening on port ${(server.address() as AddressInfo).port}`);
 });

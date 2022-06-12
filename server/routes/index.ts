@@ -149,7 +149,7 @@ router.post("/guess", (request: express.Request, response: express.Response) =>
 {
 	const word = <string>request.query["word"];
 
-	if (word)
+	if (word !== undefined)
 	{
 		response.send(comparator.guess(word));
 	}

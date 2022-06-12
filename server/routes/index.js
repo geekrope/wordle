@@ -96,7 +96,7 @@ setInterval(() => {
 }, 1000);
 router.post("/guess", (request, response) => {
     const word = request.query["word"];
-    if (word) {
+    if (word !== undefined) {
         response.send(comparator.guess(word));
     }
     else {

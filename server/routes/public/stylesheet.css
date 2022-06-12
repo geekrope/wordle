@@ -208,6 +208,7 @@ body, html {
 .alerts {
     position: absolute;
     display: flex;
+    z-index: 1;
     flex-direction: column;
     top: 10%;
     left: 50%;
