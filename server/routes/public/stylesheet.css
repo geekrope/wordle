@@ -204,3 +204,24 @@ body, html {
     margin: 0 auto 0 auto;
     width: min-content;
 }
+
+.alerts {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.alertBox {
+    padding: 16px;
+    margin: 16px;
+    font-size: 16px;
+    font-family: var(--default-font-family);
+    border-radius: 4px;
+    width: max-content;
+    height: min-content;
+    background: #000000;
+    color: #ffffff;
+}

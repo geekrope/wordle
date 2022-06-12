@@ -5,6 +5,7 @@ const alphabet = /^[A-Za-z0-9]*$/;
 const statisticsId = "statistics";
 const guessesId = "guesses";
 const wrapperId = "wrapper";
+const alertsContainerId = "alerts";
 
 enum letterType
 {
@@ -119,6 +120,26 @@ function createBoard(): HTMLDivElement
 	}
 
 	return container;
+}
+
+function createAlert(text: string): HTMLDivElement
+{
+	const alert = document.createElement("div");
+	alert.className = "alertBox";
+	alert.innerHTML = text;
+
+	const animation = alert.animate([
+		{ opacity: 1, offset: 0 },
+		{ opacity: 1, offset: 0.7 },
+		{ opacity: 0, offset: 1, easing : "cubic-bezier(0.645, 0.045, 0.355, 1)" }
+	], { duration: 1000 });
+
+	animation.onfinish = () =>
+	{
+		alert.remove();
+	}
+
+	return alert;
 }
 
 function createBlankStatistics(): UserStatistics
@@ -419,7 +440,7 @@ function keyHandler(charCode: number): void
 				currentColumn--;
 			}
 		}
-	}	
+	}
 }
 
 window.addEventListener("load", () =>
@@ -437,3 +458,13 @@ window.addEventListener("keydown", (event) =>
 {
 	keyHandler(event.keyCode);
 });
+
+window.alert = (message) =>
+{
+	const alertsContainer = document.getElementById(alertsContainerId);
+
+	if (alertsContainer)
+	{
+		alertsContainer.insertBefore(createAlert(message), alertsContainer.firstChild);
+	}	
+}
