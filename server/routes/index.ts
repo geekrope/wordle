@@ -3,11 +3,18 @@ import fs = require('fs');
 
 const router = express.Router();
 
+type mappedWord = { index: number, code: number }[];
+
 enum letterType
 {
 	correct = 2,
 	present = 1,
 	absent = 0
+}
+
+interface WordProvider
+{
+	get word(): string;
 }
 
 class Letter
@@ -27,87 +34,199 @@ class Letter
 	}
 }
 
-class Comparator
+class Vocabulary
 {
-	private _wordIndex: number;
-	private readonly wordLength: number = 5;
 	private readonly _vocabulary: string[];
 
-	private get currentWord(): string
+	public constructor(fileName: string)
 	{
-		return this._vocabulary[this._wordIndex];
+		try
+		{
+			this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
+		}
+		catch (error)
+		{
+			throw error;
+		}
 	}
 
-	public guess(word: string): Letter[] | string
+	public get length(): number
+	{
+		return this._vocabulary.length;
+	}
+
+	public exist(word: string)
+	{
+		return this.getWordIndex(word) > -1;
+	}
+
+	public getWordIndex(word: string)
+	{
+		return this._vocabulary.findIndex((value) => { return value.toLowerCase() == word.toLowerCase() });
+	}
+
+	public getWordByIndex(index: number)
+	{
+		try
+		{
+			return this._vocabulary[index];
+		}
+		catch (error)
+		{
+			throw error;
+		}
+	}
+}
+
+class WordPicker implements WordProvider
+{
+	private _vocabulary: Vocabulary;
+	private _wordIndex: number;
+
+	public get word(): string
+	{
+		if (this._wordIndex > 0)
+		{
+			return this._vocabulary.getWordByIndex(this._wordIndex);
+		}
+		else
+		{
+			throw Error("Undeclared word");
+		}
+	}
+
+	public constructor(vocabulary: Vocabulary)
+	{
+		this._vocabulary = vocabulary;
+		this._wordIndex = -1;
+	}
+
+	public pickRandomly()
+	{
+		this._wordIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
+	}
+
+	public pickByIndex(index: number)
+	{
+		if (index < this._vocabulary.length && index > -1)
+		{
+			this._wordIndex = index;
+		}
+		else
+		{
+			throw new Error("Index was out of range bounds")
+		}
+	}
+}
+
+class Comparator
+{
+	private _vocabulary: Vocabulary;
+
+	private wordToCharIndices(word: string): mappedWord
+	{
+		const wordCharIndices: mappedWord = [];
+
+		for (let index = 0; index < word.length; index++)
+		{
+			wordCharIndices.push({ index: index, code: word.charCodeAt(index) });
+		}
+
+		return wordCharIndices;
+	}
+
+	private findCorrectLetters(word: mappedWord, correctWord: mappedWord, foundLetters: Letter[]): Letter[]
+	{
+		const letters = foundLetters.slice();
+
+		for (let index = 0; index < correctWord.length && index < word.length;)
+		{
+			const guessedChar = word[index];
+			const originalChar = correctWord.find((value) => { return value.index == guessedChar.index; });
+
+			if (originalChar && originalChar.code == guessedChar.code)
+			{
+				letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
+
+				correctWord.splice(index, 1);
+				word.splice(index, 1);
+			}
+			else
+			{
+				index++;
+			}
+		}
+
+		return letters;
+	}
+
+	private findPresentLetters(word: mappedWord, correctWord: mappedWord, foundLetters: Letter[]): Letter[]
+	{
+		const letters = foundLetters.slice();
+
+		for (let index = 0; index < correctWord.length && index < word.length;)
+		{
+			const guessedChar = word[index];
+			const charIndexInWord = correctWord.findIndex((value) => { return value.code == guessedChar.code; });
+
+			if (charIndexInWord > -1)
+			{
+				letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
+
+				correctWord.splice(charIndexInWord, 1);
+				word.splice(index, 1);
+			}
+			else
+			{
+				index++;
+			}
+		}
+
+		return letters;
+	}
+
+	private addRemainingLetters(word: mappedWord, type: letterType, foundLetters: Letter[]): Letter[]
+	{
+		const letters = foundLetters.slice();
+
+		for (let index = 0; index < word.length; index++)
+		{
+			const guessedChar = word[index];
+
+			letters[guessedChar.index] = new Letter(guessedChar.code, type);
+		}
+
+		return letters;
+	}
+
+	public constructor(vocabulary: Vocabulary)
+	{
+		this._vocabulary = vocabulary;
+	}
+
+	public compare(correctWord: string, word: string): Letter[] | string
 	{
 		word = word.toLowerCase();
+		correctWord = correctWord.toLowerCase();
 
-		if (word.length < this.wordLength)
+		if (word.length < correctWord.length)
 		{
 			return "Not enough letters";
 		}
-		else if (word.length > this.wordLength)
+		else if (word.length > correctWord.length)
 		{
 			return "Too many letters";
 		}
-		else if (this._vocabulary.includes(word))
+		else if (this._vocabulary.exist(word))
 		{
-			const currentWord: { index: number, code: number }[] = [];
-			const guessedWord: { index: number, code: number }[] = [];
+			const mappedCorrectWord: { index: number, code: number }[] = this.wordToCharIndices(correctWord);
+			const mappedGuessedWord: { index: number, code: number }[] = this.wordToCharIndices(word);
 
-			const letters: Letter[] = new Array<Letter>(this.wordLength);
+			let letters: Letter[] = new Array<Letter>(word.length);
 
-			for (let index = 0; index < this.wordLength; index++)
-			{
-				currentWord.push({ index: index, code: this.currentWord.charCodeAt(index) });
-				guessedWord.push({ index: index, code: word.charCodeAt(index) });
-			}
-
-			//correct
-			for (let index = 0; index < currentWord.length && index < guessedWord.length;)
-			{
-				const guessedChar = guessedWord[index];
-				const originalChar = currentWord.find((value) => { return value.index == guessedChar.index; });
-
-				if (originalChar && originalChar.code == guessedChar.code)
-				{
-					letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
-
-					currentWord.splice(index, 1);
-					guessedWord.splice(index, 1);
-				}
-				else
-				{
-					index++;
-				}
-			}
-
-			//present
-			for (let index = 0; index < currentWord.length && index < guessedWord.length;)
-			{
-				const guessedChar = guessedWord[index];
-				const charIndexInWord = currentWord.findIndex((value) => { return value.code == guessedChar.code; });
-
-				if (charIndexInWord > -1)
-				{
-					letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
-
-					currentWord.splice(charIndexInWord, 1);
-					guessedWord.splice(index, 1);
-				}
-				else
-				{
-					index++;
-				}
-			}
-
-			//absent
-			for (let index = 0; index < currentWord.length && index < guessedWord.length; index++)
-			{
-				const guessedChar = guessedWord[index];
-
-				letters[guessedChar.index] = new Letter(guessedChar.code, letterType.absent);
-			}
+			letters = this.findCorrectLetters(mappedGuessedWord, mappedCorrectWord, letters);
+			letters = this.findPresentLetters(mappedGuessedWord, mappedCorrectWord, letters);
+			letters = this.addRemainingLetters(mappedGuessedWord, letterType.absent, letters);
 
 			return letters;
 		}
@@ -116,34 +235,13 @@ class Comparator
 			return "Not in word list";
 		}
 	}
-	public generateWord(): void
-	{
-		const newIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
-
-		this._wordIndex = newIndex;
-	}
-
-	public constructor(fileName: string)
-	{
-		this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
-		this._wordIndex = -1;
-
-		this.generateWord();
-	}
 }
 
-const comparator = new Comparator(__dirname + "/vocabulary.json");
+const englishVocabulary = new Vocabulary(__dirname + "/vocabulary.json");
+const comparator = new Comparator(englishVocabulary);
+const wordPicker = new WordPicker(englishVocabulary);
 
-let lastCapturedDate = new Date(Date.now());
-
-setInterval(() =>
-{
-	if (new Date(Date.now()).getDate() != lastCapturedDate.getDate())
-	{
-		comparator.generateWord();
-		lastCapturedDate = new Date(Date.now());
-	}
-}, 1000);
+wordPicker.pickRandomly();
 
 router.post("/guess", (request: express.Request, response: express.Response) =>
 {
@@ -151,7 +249,7 @@ router.post("/guess", (request: express.Request, response: express.Response) =>
 
 	if (word !== undefined)
 	{
-		response.send(comparator.guess(word));
+		response.send(comparator.compare(wordPicker.word, word));
 	}
 	else
 	{
@@ -163,6 +261,11 @@ router.post("/guess", (request: express.Request, response: express.Response) =>
 router.get("/", (_request: express.Request, response: express.Response) =>
 {
 	response.sendFile(__dirname + "/index.html");
+})
+
+router.get("/pick", (_request: express.Request, _response: express.Response) =>
+{
+	wordPicker.pickRandomly();
 })
 
 export default router;

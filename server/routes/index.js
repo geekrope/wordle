@@ -18,86 +18,130 @@ class Letter {
         return String.fromCharCode(this._charCode);
     }
 }
-class Comparator {
+class Vocabulary {
     constructor(fileName) {
-        this.wordLength = 5;
         this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
+    }
+    get length() {
+        return this._vocabulary.length;
+    }
+    exist(word) {
+        return this.getWordIndex(word) > -1;
+    }
+    getWordIndex(word) {
+        return this._vocabulary.findIndex((value) => { return value.toLowerCase() == word.toLowerCase(); });
+    }
+    getWordByIndex(index) {
+        return this._vocabulary[index];
+    }
+}
+class WordPicker {
+    constructor(vocabulary) {
+        this._vocabulary = vocabulary;
         this._wordIndex = -1;
-        this.generateWord();
     }
-    get currentWord() {
-        return this._vocabulary[this._wordIndex];
+    get word() {
+        if (this._wordIndex > 0) {
+            return this._vocabulary.getWordByIndex(this._wordIndex);
+        }
+        else {
+            throw Error("Undeclared word");
+        }
     }
-    guess(word) {
+    pickRandomly() {
+        this._wordIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
+    }
+    pickByIndex(index) {
+        if (index < this._vocabulary.length) {
+            this._wordIndex = index;
+        }
+        else {
+            throw new Error("Index was out of range bounds");
+        }
+    }
+}
+class Comparator {
+    constructor(vocabulary) {
+        this._vocabulary = vocabulary;
+    }
+    wordToCharIndices(word) {
+        const wordCharIndices = [];
+        for (let index = 0; index < word.length; index++) {
+            wordCharIndices.push({ index: index, code: word.charCodeAt(index) });
+        }
+        return wordCharIndices;
+    }
+    findCorrectLetters(word, correctWord, foundLetters) {
+        const letters = foundLetters.slice();
+        for (let index = 0; index < correctWord.length && index < word.length;) {
+            const guessedChar = word[index];
+            const originalChar = correctWord.find((value) => { return value.index == guessedChar.index; });
+            if (originalChar && originalChar.code == guessedChar.code) {
+                letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
+                correctWord.splice(index, 1);
+                word.splice(index, 1);
+            }
+            else {
+                index++;
+            }
+        }
+        return letters;
+    }
+    findPresentLetters(word, correctWord, foundLetters) {
+        const letters = foundLetters.slice();
+        for (let index = 0; index < correctWord.length && index < word.length;) {
+            const guessedChar = word[index];
+            const charIndexInWord = correctWord.findIndex((value) => { return value.code == guessedChar.code; });
+            if (charIndexInWord > -1) {
+                letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
+                correctWord.splice(charIndexInWord, 1);
+                word.splice(index, 1);
+            }
+            else {
+                index++;
+            }
+        }
+        return letters;
+    }
+    addRemainingLetters(word, type, foundLetters) {
+        const letters = foundLetters.slice();
+        for (let index = 0; index < word.length; index++) {
+            const guessedChar = word[index];
+            letters[guessedChar.index] = new Letter(guessedChar.code, type);
+        }
+        return letters;
+    }
+    compare(correctWord, word) {
         word = word.toLowerCase();
-        if (word.length < this.wordLength) {
+        correctWord = correctWord.toLowerCase();
+        if (word.length < correctWord.length) {
             return "Not enough letters";
         }
-        else if (word.length > this.wordLength) {
+        else if (word.length > correctWord.length) {
             return "Too many letters";
         }
-        else if (this._vocabulary.includes(word)) {
-            const currentWord = [];
-            const guessedWord = [];
-            const letters = new Array(this.wordLength);
-            for (let index = 0; index < this.wordLength; index++) {
-                currentWord.push({ index: index, code: this.currentWord.charCodeAt(index) });
-                guessedWord.push({ index: index, code: word.charCodeAt(index) });
-            }
-            //correct
-            for (let index = 0; index < currentWord.length && index < guessedWord.length;) {
-                const guessedChar = guessedWord[index];
-                const originalChar = currentWord.find((value) => { return value.index == guessedChar.index; });
-                if (originalChar && originalChar.code == guessedChar.code) {
-                    letters[guessedChar.index] = new Letter(guessedChar.code, letterType.correct);
-                    currentWord.splice(index, 1);
-                    guessedWord.splice(index, 1);
-                }
-                else {
-                    index++;
-                }
-            }
-            //present
-            for (let index = 0; index < currentWord.length && index < guessedWord.length;) {
-                const guessedChar = guessedWord[index];
-                const charIndexInWord = currentWord.findIndex((value) => { return value.code == guessedChar.code; });
-                if (charIndexInWord > -1) {
-                    letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
-                    currentWord.splice(charIndexInWord, 1);
-                    guessedWord.splice(index, 1);
-                }
-                else {
-                    index++;
-                }
-            }
-            //absent
-            for (let index = 0; index < currentWord.length && index < guessedWord.length; index++) {
-                const guessedChar = guessedWord[index];
-                letters[guessedChar.index] = new Letter(guessedChar.code, letterType.absent);
-            }
+        else if (this._vocabulary.exist(word)) {
+            const mappedCorrectWord = this.wordToCharIndices(correctWord);
+            const mappedGuessedWord = this.wordToCharIndices(word);
+            let letters = new Array(word.length);
+            letters = this.findCorrectLetters(mappedGuessedWord, mappedCorrectWord, letters);
+            letters = this.findPresentLetters(mappedGuessedWord, mappedCorrectWord, letters);
+            letters = this.addRemainingLetters(mappedGuessedWord, letterType.absent, letters);
             return letters;
         }
         else {
             return "Not in word list";
         }
     }
-    generateWord() {
-        const newIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
-        this._wordIndex = newIndex;
-    }
 }
-const comparator = new Comparator(__dirname + "/vocabulary.json");
-let lastCapturedDate = new Date(Date.now());
-setInterval(() => {
-    if (new Date(Date.now()).getDate() != lastCapturedDate.getDate()) {
-        comparator.generateWord();
-        lastCapturedDate = new Date(Date.now());
-    }
-}, 1000);
+const englishVocabulary = new Vocabulary(__dirname + "/vocabulary.json");
+const comparator = new Comparator(englishVocabulary);
+const wordPicker = new WordPicker(englishVocabulary);
+wordPicker.pickRandomly();
 router.post("/guess", (request, response) => {
     const word = request.query["word"];
     if (word !== undefined) {
-        response.send(comparator.guess(word));
+        response.send(comparator.compare(wordPicker.word, word));
     }
     else {
         response.statusMessage = "Missing word definition";
@@ -106,6 +150,9 @@ router.post("/guess", (request, response) => {
 });
 router.get("/", (_request, response) => {
     response.sendFile(__dirname + "/index.html");
+});
+router.get("/pick", (_request, _response) => {
+    wordPicker.pickRandomly();
 });
 exports.default = router;
 //# sourceMappingURL=index.js.map
