@@ -192,17 +192,39 @@ body, html {
 }
 
 .header {
-    width: 100%;
-    height: min-content;
-    padding: 7px 0 7px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px 0 16px;
+    width: calc(100% - 32px);
     border-bottom: 1px solid var(--border-unspecified);
 }
 
 .headerTitle {
+    line-height: 50px;
+    margin: 0;
     font-family: "Karnak";
     font-size: 37px;
-    margin: 0 auto 0 auto;
     width: min-content;
+}
+
+.leftMenu, .rightMenu {
+    width: 70px;
+    display: flex;
+}
+
+.leftMenu {
+    justify-content: start;
+}
+
+.rightMenu {
+    justify-content: end;
+}
+
+.buttonIcon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
 }
 
 .alerts {

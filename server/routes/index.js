@@ -20,7 +20,12 @@ class Letter {
 }
 class Vocabulary {
     constructor(fileName) {
-        this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
+        try {
+            this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
+        }
+        catch (error) {
+            throw error;
+        }
     }
     get length() {
         return this._vocabulary.length;
@@ -32,7 +37,12 @@ class Vocabulary {
         return this._vocabulary.findIndex((value) => { return value.toLowerCase() == word.toLowerCase(); });
     }
     getWordByIndex(index) {
-        return this._vocabulary[index];
+        try {
+            return this._vocabulary[index];
+        }
+        catch (error) {
+            throw error;
+        }
     }
 }
 class WordPicker {
@@ -52,7 +62,7 @@ class WordPicker {
         this._wordIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
     }
     pickByIndex(index) {
-        if (index < this._vocabulary.length) {
+        if (index < this._vocabulary.length && index > -1) {
             this._wordIndex = index;
         }
         else {

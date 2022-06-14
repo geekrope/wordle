@@ -12,7 +12,15 @@
 <body>
     <div class="wrapper" id="wrapper">
         <div class="header">
+            <div class="leftMenu">
+                <a href="https://github.com/geekrope/wordle">
+                    <img src="github-icon.svg" class="buttonIcon" />
+                </a>
+            </div>
             <p class="headerTitle">VVordle</p>
+            <div class="rightMenu">
+                <img src="share.svg" class="buttonIcon" onclick="navigator.share({url: window.location.href })" />
+            </div>
         </div>
         <div class="alerts" id="alerts">
         </div>
