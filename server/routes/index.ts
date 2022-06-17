@@ -12,9 +12,23 @@ enum letterType
 	absent = 0
 }
 
-interface WordProvider
+class Utils
 {
-	get word(): string;
+	public static toBoolean(value: string): boolean | undefined
+	{
+		if (value == "true")
+		{
+			return true;
+		}
+		else if (value == "false")
+		{
+			return false;
+		}
+		else
+		{
+			return undefined;
+		}
+	}
 }
 
 class Letter
@@ -22,6 +36,7 @@ class Letter
 	private readonly _charCode: number;
 
 	public readonly type: letterType;
+
 	public get char(): string
 	{
 		return String.fromCharCode(this._charCode);
@@ -40,14 +55,7 @@ class Vocabulary
 
 	public constructor(fileName: string)
 	{
-		try
-		{
-			this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
-		}
-		catch (error)
-		{
-			throw error;
-		}
+		this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
 	}
 
 	public get length(): number
@@ -55,67 +63,50 @@ class Vocabulary
 		return this._vocabulary.length;
 	}
 
-	public exist(word: string)
+	public exist(word: string): boolean
 	{
-		return this.getWordIndex(word) > -1;
+		return this.getWordIndex(word) >= 0;
 	}
 
-	public getWordIndex(word: string)
+	public getWordIndex(word: string): number
 	{
 		return this._vocabulary.findIndex((value) => { return value.toLowerCase() == word.toLowerCase() });
 	}
 
-	public getWordByIndex(index: number)
+	public getWordByIndex(index: number): string
 	{
-		try
-		{
-			return this._vocabulary[index];
-		}
-		catch (error)
-		{
-			throw error;
-		}
+		return this._vocabulary[index];
 	}
 }
 
-class WordPicker implements WordProvider
+class WordPicker
 {
 	private _vocabulary: Vocabulary;
-	private _wordIndex: number;
 
-	public get word(): string
+	private _dailyIndex: number;
+
+	public get dailyWord(): string
 	{
-		if (this._wordIndex > 0)
+		return this._vocabulary.getWordByIndex(this._dailyIndex);
+	}
+
+	public set dailyIndex(value: number)
+	{
+		if (value >= 0 && value < this._vocabulary.length)
 		{
-			return this._vocabulary.getWordByIndex(this._wordIndex);
-		}
-		else
-		{
-			throw Error("Undeclared word");
+			this._dailyIndex = value;
 		}
 	}
 
 	public constructor(vocabulary: Vocabulary)
 	{
 		this._vocabulary = vocabulary;
-		this._wordIndex = -1;
+		this._dailyIndex = this.pickRandomIndex();
 	}
 
-	public pickRandomly()
+	public pickRandomIndex(): number
 	{
-		this._wordIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
-	}
-
-	public pickByIndex(index: number)
-	{
-		if (index < this._vocabulary.length && index > -1)
-		{
-			this._wordIndex = index;
-		}
-		else
-		{
-			throw new Error("Index was out of range bounds")
-		}
+		return Math.floor(Math.random() * (this._vocabulary.length - 1));
 	}
 }
 
@@ -169,7 +160,7 @@ class Comparator
 			const guessedChar = word[index];
 			const charIndexInWord = correctWord.findIndex((value) => { return value.code == guessedChar.code; });
 
-			if (charIndexInWord > -1)
+			if (charIndexInWord >= 0)
 			{
 				letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
 
@@ -241,31 +232,46 @@ const englishVocabulary = new Vocabulary(__dirname + "/vocabulary.json");
 const comparator = new Comparator(englishVocabulary);
 const wordPicker = new WordPicker(englishVocabulary);
 
-wordPicker.pickRandomly();
-
 router.post("/guess", (request: express.Request, response: express.Response) =>
 {
 	const word = <string>request.query["word"];
+	const daily = <string>request.query["daily"];
+	const wordIndex = <string>request.query["comparisonParams"];
 
-	if (word !== undefined)
+	const correctRequest = word !== undefined && daily !== undefined;
+
+	if (correctRequest && Utils.toBoolean(daily))
 	{
-		response.send(comparator.compare(wordPicker.word, word));
+		response.send(comparator.compare(word, wordPicker.dailyWord)).end();
+	}
+	else if (correctRequest && !Utils.toBoolean(daily))
+	{
+		const parsedWordIndex = Number(wordIndex);
+
+		try
+		{
+			response.send(comparator.compare(word, englishVocabulary.getWordByIndex(parsedWordIndex)));
+		}
+		catch (error)
+		{
+			response.send((<Error>error).message).end();
+		}
 	}
 	else
 	{
-		response.statusMessage = "Missing word definition";
-		response.sendStatus(400);
+		response.statusMessage = "Missing necessary parameters";
+		response.sendStatus(400).end();
 	}
-})
+});
 
 router.get("/", (_request: express.Request, response: express.Response) =>
 {
 	response.sendFile(__dirname + "/index.html");
 })
 
-router.get("/pick", (_request: express.Request, _response: express.Response) =>
+router.get("/pick", (_request: express.Request, response: express.Response) =>
 {
-	wordPicker.pickRandomly();
-})
+	response.send(wordPicker.pickRandomIndex().toString()).end();
+});
 
 export default router;

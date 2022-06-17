@@ -16,6 +16,7 @@ const statisticsId = "statistics";
 const guessesId = "guesses";
 const wrapperId = "wrapper";
 const alertsContainerId = "alerts";
+let pickedWord = "";
 var letterType;
 (function (letterType) {
     letterType[letterType["correct"] = 2] = "correct";
@@ -227,7 +228,7 @@ function checkCurrentRow() {
     return __awaiter(this, void 0, void 0, function* () {
         keysLocked = true;
         const word = getCurrentWord();
-        const text = yield (yield fetch(`/guess?word=${word}`, { method: "POST" })).text();
+        const text = yield (yield fetch(`/guess?word=${word}&daily=false&comparisonParams=${pickedWord}`, { method: "POST" })).text();
         try {
             const specifiedWord = JSON.parse(text);
             let correctLetters = 0;
@@ -339,13 +340,14 @@ function keyHandler(charCode) {
         }
     }
 }
-window.addEventListener("load", () => {
+window.addEventListener("load", () => __awaiter(void 0, void 0, void 0, function* () {
     const wrapper = document.getElementById(wrapperId);
     if (wrapper) {
         wrapper.appendChild(createBoard());
         wrapper.appendChild(createKeyboard());
     }
-});
+    pickedWord = yield (yield fetch("/pick")).text();
+}));
 window.addEventListener("keydown", (event) => {
     keyHandler(event.keyCode);
 });

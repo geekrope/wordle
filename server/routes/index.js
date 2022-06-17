@@ -9,6 +9,19 @@ var letterType;
     letterType[letterType["present"] = 1] = "present";
     letterType[letterType["absent"] = 0] = "absent";
 })(letterType || (letterType = {}));
+class Utils {
+    static toBoolean(value) {
+        if (value == "true") {
+            return true;
+        }
+        else if (value == "false") {
+            return false;
+        }
+        else {
+            return undefined;
+        }
+    }
+}
 class Letter {
     constructor(charCode, type) {
         this._charCode = charCode;
@@ -48,26 +61,13 @@ class Vocabulary {
 class WordPicker {
     constructor(vocabulary) {
         this._vocabulary = vocabulary;
-        this._wordIndex = -1;
+        this._dailyIndex = this.pickRandomIndex();
     }
-    get word() {
-        if (this._wordIndex > 0) {
-            return this._vocabulary.getWordByIndex(this._wordIndex);
-        }
-        else {
-            throw Error("Undeclared word");
-        }
+    get dailyWord() {
+        return this._vocabulary.getWordByIndex(this._dailyIndex);
     }
-    pickRandomly() {
-        this._wordIndex = Math.floor(Math.random() * (this._vocabulary.length - 1));
-    }
-    pickByIndex(index) {
-        if (index < this._vocabulary.length && index > -1) {
-            this._wordIndex = index;
-        }
-        else {
-            throw new Error("Index was out of range bounds");
-        }
+    pickRandomIndex() {
+        return Math.floor(Math.random() * (this._vocabulary.length - 1));
     }
 }
 class Comparator {
@@ -147,22 +147,33 @@ class Comparator {
 const englishVocabulary = new Vocabulary(__dirname + "/vocabulary.json");
 const comparator = new Comparator(englishVocabulary);
 const wordPicker = new WordPicker(englishVocabulary);
-wordPicker.pickRandomly();
 router.post("/guess", (request, response) => {
     const word = request.query["word"];
-    if (word !== undefined) {
-        response.send(comparator.compare(wordPicker.word, word));
+    const daily = request.query["daily"];
+    const wordIndex = request.query["comparisonParams"];
+    const correctRequest = word !== undefined && daily !== undefined;
+    if (correctRequest && Utils.toBoolean(daily)) {
+        response.send(comparator.compare(word, wordPicker.dailyWord)).end();
+    }
+    else if (correctRequest && !Utils.toBoolean(daily)) {
+        const parsedWordIndex = Number(wordIndex);
+        try {
+            response.send(comparator.compare(word, englishVocabulary.getWordByIndex(parsedWordIndex)));
+        }
+        catch (error) {
+            response.send(error.message).end();
+        }
     }
     else {
-        response.statusMessage = "Missing word definition";
-        response.sendStatus(400);
+        response.statusMessage = "Missing necessary parameters";
+        response.sendStatus(400).end();
     }
 });
 router.get("/", (_request, response) => {
     response.sendFile(__dirname + "/index.html");
 });
-router.get("/pick", (_request, _response) => {
-    wordPicker.pickRandomly();
+router.get("/pick", (_request, response) => {
+    response.send(wordPicker.pickRandomIndex().toString()).end();
 });
 exports.default = router;
 //# sourceMappingURL=index.js.map
