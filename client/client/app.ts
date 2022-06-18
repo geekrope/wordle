@@ -481,6 +481,28 @@ function keyHandler(charCode: number): void
 	}
 }
 
+function decodeQuery(search: string): any
+{
+	if (search[0] == "?")
+	{
+		search = search.substring(1);
+	}
+
+	const splittedParameters = search.split("&").filter(element => element);;
+	const result = {};
+
+	splittedParameters.forEach((parameter) =>
+	{
+		const equalSignIndex = parameter.indexOf("=");
+		const name = parameter.substring(0, equalSignIndex);
+		const value = parameter.substring(equalSignIndex + 1);
+
+		result[name] = value;
+	});
+
+	return result;
+}
+
 window.addEventListener("load", async () =>
 {
 	const wrapper = document.getElementById(wrapperId);
@@ -491,7 +513,21 @@ window.addEventListener("load", async () =>
 		wrapper.appendChild(createKeyboard());
 	}
 
-	pickedWordIndex = await (await fetch("/pick?type=random")).text();
+	const urlParams = decodeQuery(window.location.search);
+	const type = urlParams["type"];
+
+	fetch(`/pick?type=${type ? type : "daily"}`).then(async (fulfilled) =>
+	{
+		if (fulfilled.ok)
+		{
+			pickedWordIndex = await fulfilled.text();
+		}
+		else
+		{
+			pickedWordIndex = await (await fetch(`/pick?type=daily`)).text();
+		}
+
+	});
 });
 
 window.addEventListener("keydown", (event) =>

@@ -198,13 +198,12 @@ body, html {
     padding: 0 16px 0 16px;
     width: calc(100% - 32px);
     border-bottom: 1px solid var(--border-unspecified);
+    height: 50px;
 }
 
 .headerTitle {
-    line-height: 50px;
     margin: 0;
-    font-family: "Karnak";
-    font-size: 37px;
+    height: 27.38px;
     width: min-content;
 }
 
