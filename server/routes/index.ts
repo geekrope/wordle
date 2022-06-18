@@ -4,31 +4,14 @@ import fs = require('fs');
 const router = express.Router();
 
 type mappedWord = { index: number, code: number }[];
+type wordType = "daily" | "random";
+type comparisonParams = { pickedWordIndex: number };
 
 enum letterType
 {
 	correct = 2,
 	present = 1,
 	absent = 0
-}
-
-class Utils
-{
-	public static toBoolean(value: string): boolean | undefined
-	{
-		if (value == "true")
-		{
-			return true;
-		}
-		else if (value == "false")
-		{
-			return false;
-		}
-		else
-		{
-			return undefined;
-		}
-	}
 }
 
 class Letter
@@ -88,6 +71,11 @@ class WordPicker
 	public get dailyWord(): string
 	{
 		return this._vocabulary.getWordByIndex(this._dailyIndex);
+	}
+
+	public get dailyIndex(): number
+	{
+		return this._dailyIndex;
 	}
 
 	public set dailyIndex(value: number)
@@ -235,26 +223,19 @@ const wordPicker = new WordPicker(englishVocabulary);
 router.post("/guess", (request: express.Request, response: express.Response) =>
 {
 	const word = <string>request.query["word"];
-	const daily = <string>request.query["daily"];
-	const wordIndex = <string>request.query["comparisonParams"];
+	const comparisonParams = <string>request.query["comparisonParams"];
 
-	const correctRequest = word !== undefined && daily !== undefined;
-
-	if (correctRequest && Utils.toBoolean(daily))
+	if (word !== undefined && comparisonParams)
 	{
-		response.send(comparator.compare(word, wordPicker.dailyWord)).end();
-	}
-	else if (correctRequest && !Utils.toBoolean(daily))
-	{
-		const parsedWordIndex = Number(wordIndex);
-
 		try
 		{
-			response.send(comparator.compare(word, englishVocabulary.getWordByIndex(parsedWordIndex)));
+			const parsedParams = <comparisonParams>JSON.parse(comparisonParams);
+			response.send(comparator.compare(englishVocabulary.getWordByIndex(parsedParams.pickedWordIndex), word)).end();
 		}
-		catch (error)
+		catch
 		{
-			response.send((<Error>error).message).end();
+			response.statusMessage = "Incorrect comparison parameters";
+			response.sendStatus(400).end();
 		}
 	}
 	else
@@ -269,9 +250,31 @@ router.get("/", (_request: express.Request, response: express.Response) =>
 	response.sendFile(__dirname + "/index.html");
 })
 
-router.get("/pick", (_request: express.Request, response: express.Response) =>
+router.get("/pick", (request: express.Request, response: express.Response) =>
 {
-	response.send(wordPicker.pickRandomIndex().toString()).end();
+	const type = <wordType>request.query["type"];
+
+	if (type)
+	{
+		switch (type)
+		{
+			case "daily":
+				response.send(wordPicker.dailyIndex.toString()).end();
+				break;
+			case "random":
+				response.send(wordPicker.pickRandomIndex().toString()).end();
+				break;
+			default:
+				response.statusMessage = "Unknown word type";
+				response.sendStatus(400).end();
+				break;
+		}
+	}
+	else
+	{
+		response.statusMessage = "Missing necessary parameters";
+		response.sendStatus(400).end();
+	}
 });
 
 export default router;

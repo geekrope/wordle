@@ -7,7 +7,7 @@ const guessesId = "guesses";
 const wrapperId = "wrapper";
 const alertsContainerId = "alerts";
 
-let pickedWord = "";
+let pickedWordIndex = "";
 
 enum letterType
 {
@@ -323,7 +323,7 @@ async function checkCurrentRow(): Promise<boolean | string>
 
 	const word = getCurrentWord();
 
-	const text = await (await fetch(`/guess?word=${word}&daily=false&comparisonParams=${pickedWord}`, { method: "POST" })).text();
+	const text = await (await fetch(`/guess?word=${word}&comparisonParams={"pickedWordIndex":${pickedWordIndex}}`, { method: "POST" })).text();
 
 	try
 	{
@@ -491,7 +491,7 @@ window.addEventListener("load", async () =>
 		wrapper.appendChild(createKeyboard());
 	}
 
-	pickedWord = await (await fetch("/pick")).text();
+	pickedWordIndex = await (await fetch("/pick?type=random")).text();
 });
 
 window.addEventListener("keydown", (event) =>

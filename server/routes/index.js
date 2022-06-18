@@ -9,19 +9,6 @@ var letterType;
     letterType[letterType["present"] = 1] = "present";
     letterType[letterType["absent"] = 0] = "absent";
 })(letterType || (letterType = {}));
-class Utils {
-    static toBoolean(value) {
-        if (value == "true") {
-            return true;
-        }
-        else if (value == "false") {
-            return false;
-        }
-        else {
-            return undefined;
-        }
-    }
-}
 class Letter {
     constructor(charCode, type) {
         this._charCode = charCode;
@@ -33,29 +20,19 @@ class Letter {
 }
 class Vocabulary {
     constructor(fileName) {
-        try {
-            this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
-        }
-        catch (error) {
-            throw error;
-        }
+        this._vocabulary = JSON.parse(fs.readFileSync(fileName, "utf8"));
     }
     get length() {
         return this._vocabulary.length;
     }
     exist(word) {
-        return this.getWordIndex(word) > -1;
+        return this.getWordIndex(word) >= 0;
     }
     getWordIndex(word) {
         return this._vocabulary.findIndex((value) => { return value.toLowerCase() == word.toLowerCase(); });
     }
     getWordByIndex(index) {
-        try {
-            return this._vocabulary[index];
-        }
-        catch (error) {
-            throw error;
-        }
+        return this._vocabulary[index];
     }
 }
 class WordPicker {
@@ -65,6 +42,14 @@ class WordPicker {
     }
     get dailyWord() {
         return this._vocabulary.getWordByIndex(this._dailyIndex);
+    }
+    get dailyIndex() {
+        return this._dailyIndex;
+    }
+    set dailyIndex(value) {
+        if (value >= 0 && value < this._vocabulary.length) {
+            this._dailyIndex = value;
+        }
     }
     pickRandomIndex() {
         return Math.floor(Math.random() * (this._vocabulary.length - 1));
@@ -102,7 +87,7 @@ class Comparator {
         for (let index = 0; index < correctWord.length && index < word.length;) {
             const guessedChar = word[index];
             const charIndexInWord = correctWord.findIndex((value) => { return value.code == guessedChar.code; });
-            if (charIndexInWord > -1) {
+            if (charIndexInWord >= 0) {
                 letters[guessedChar.index] = new Letter(guessedChar.code, letterType.present);
                 correctWord.splice(charIndexInWord, 1);
                 word.splice(index, 1);
@@ -149,19 +134,15 @@ const comparator = new Comparator(englishVocabulary);
 const wordPicker = new WordPicker(englishVocabulary);
 router.post("/guess", (request, response) => {
     const word = request.query["word"];
-    const daily = request.query["daily"];
-    const wordIndex = request.query["comparisonParams"];
-    const correctRequest = word !== undefined && daily !== undefined;
-    if (correctRequest && Utils.toBoolean(daily)) {
-        response.send(comparator.compare(word, wordPicker.dailyWord)).end();
-    }
-    else if (correctRequest && !Utils.toBoolean(daily)) {
-        const parsedWordIndex = Number(wordIndex);
+    const comparisonParams = request.query["comparisonParams"];
+    if (word !== undefined && comparisonParams) {
         try {
-            response.send(comparator.compare(word, englishVocabulary.getWordByIndex(parsedWordIndex)));
+            const parsedParams = JSON.parse(comparisonParams);
+            response.send(comparator.compare(englishVocabulary.getWordByIndex(parsedParams.pickedWordIndex), word)).end();
         }
-        catch (error) {
-            response.send(error.message).end();
+        catch (_a) {
+            response.statusMessage = "Incorrect comparison parameters";
+            response.sendStatus(400).end();
         }
     }
     else {
@@ -172,8 +153,26 @@ router.post("/guess", (request, response) => {
 router.get("/", (_request, response) => {
     response.sendFile(__dirname + "/index.html");
 });
-router.get("/pick", (_request, response) => {
-    response.send(wordPicker.pickRandomIndex().toString()).end();
+router.get("/pick", (request, response) => {
+    const type = request.query["type"];
+    if (type) {
+        switch (type) {
+            case "daily":
+                response.send(wordPicker.dailyIndex.toString()).end();
+                break;
+            case "random":
+                response.send(wordPicker.pickRandomIndex().toString()).end();
+                break;
+            default:
+                response.statusMessage = "Unknown word type";
+                response.sendStatus(400).end();
+                break;
+        }
+    }
+    else {
+        response.statusMessage = "Missing necessary parameters";
+        response.sendStatus(400).end();
+    }
 });
 exports.default = router;
 //# sourceMappingURL=index.js.map
