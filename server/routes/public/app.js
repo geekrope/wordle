@@ -120,9 +120,6 @@ function createAlert(text) {
     };
     return alert;
 }
-function createBlankStatistics() {
-    return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
-}
 function shakeCurrentRow() {
     const row = getRow(currentRow);
     if (row) {
@@ -181,6 +178,9 @@ function createKeyboard() {
     container.appendChild(createKeyboardRow(keyboardRow3));
     return container;
 }
+function createBlankStatistics() {
+    return { correctAnswers: 0, totalAnswers: 0, guessDistribution: new Array(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+}
 function getStatistics() {
     const stats = localStorage.getItem(statisticsId);
     if (stats) {
@@ -195,6 +195,39 @@ function getStatistics() {
 function setStatistics(stats) {
     localStorage.setItem(statisticsId, JSON.stringify(stats));
 }
+function createGuessDistributionItem(item, value, maxValue, color, width) {
+    const element = document.createElement("div");
+    const itemElement = document.createElement("div");
+    const valueElement = document.createElement("div");
+    itemElement.className = "guessDistributionText";
+    itemElement.innerHTML = item.toString();
+    itemElement.style.marginRight = "4px";
+    valueElement.className = "guessDistributionText rowContainer guessDistributionValue";
+    valueElement.innerHTML = value.toString();
+    valueElement.style.width = `${Math.max(value / maxValue * 100, 7)}%`;
+    valueElement.style.background = color;
+    valueElement.style.display = "flex";
+    valueElement.style.color = "#fff";
+    valueElement.style.paddingRight = "8px";
+    element.className = "rowContainer";
+    element.style.width = width;
+    element.appendChild(itemElement);
+    element.appendChild(valueElement);
+    element.style.display = "flex";
+    return element;
+}
+function createGuessDistribution(stats) {
+    const element = document.createElement("div");
+    const maxValue = Math.max.apply(null, stats.guessDistribution);
+    element.className = "columnContainer";
+    element.style.display = "flex";
+    stats.guessDistribution.forEach((value, index) => {
+        const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "400px");
+        guessDistributionItem.style.paddingBottom = "4px";
+        element.appendChild(guessDistributionItem);
+    });
+    return element;
+}
 function getCurrentWord() {
     let word = "";
     for (let index = 0; index < lettersCount; index++) {
@@ -206,18 +239,18 @@ function getCurrentWord() {
     return word;
 }
 function winHandler() {
-    alert("bingo");
+    window.alert("Bingo");
     let userStats = getStatistics();
     userStats.correctAnswers++;
     userStats.totalAnswers++;
-    userStats.guessesDistribution[currentRow]++;
+    userStats.guessDistribution[currentRow]++;
     userStats.currentStreak++;
     userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
     setStatistics(userStats);
     keysLocked = true;
 }
 function loseHandler() {
-    alert("jsdngiksdkg");
+    window.alert("Loss");
     let userStats = getStatistics();
     userStats.totalAnswers++;
     userStats.currentStreak = 0;
@@ -371,6 +404,7 @@ window.addEventListener("load", () => __awaiter(void 0, void 0, void 0, function
             pickedWordIndex = yield (yield fetch(`/pick?type=daily`)).text();
         }
     }));
+    document.body.appendChild(createGuessDistribution(getStatistics()));
 }));
 window.addEventListener("keydown", (event) => {
     keyHandler(event.keyCode);

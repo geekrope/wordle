@@ -7,8 +7,8 @@ body, html {
 }
 
 :root {
-    --size: max(min(1px, calc(100vw / 330)), calc(32px / 62));
-    --key-size: max(min(1px, calc(100vw / 500)));
+    --size: max(min(min(1px, calc(100vw / 330)), calc((100vh - 251px) / 440)), calc(32px / 62));
+    --key-size: min(1px, calc(100vw / 500));
     --border-unspecified: #d3d6da;
     --border-selected-unspecified: #878a8c;
     --color-unspecified: #000000;
@@ -246,4 +246,20 @@ body, html {
     height: min-content;
     background: #000000;
     color: #ffffff;
+}
+
+.guessDistributionText {
+    font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+}
+
+.guessDistributionValue {
+    justify-content: end;
+    font-weight: 700;
+}
+
+.statisticsConainer {
+    box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    width: min(500px,100vw);
 }

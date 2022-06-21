@@ -61,7 +61,7 @@ interface UserStatistics
 {
 	correctAnswers: number;
 	totalAnswers: number;
-	guessesDistribution: number[];
+	guessDistribution: number[];
 	currentStreak: number;
 	maxStreak: number;
 }
@@ -158,11 +158,6 @@ function createAlert(text: string): HTMLDivElement
 	return alert;
 }
 
-function createBlankStatistics(): UserStatistics
-{
-	return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
-}
-
 function shakeCurrentRow(): void
 {
 	const row = getRow(currentRow);
@@ -246,6 +241,11 @@ function createKeyboard(): HTMLDivElement
 	return container;
 }
 
+function createBlankStatistics(): UserStatistics
+{
+	return { correctAnswers: 0, totalAnswers: 0, guessDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+}
+
 function getStatistics(): UserStatistics
 {
 	const stats = localStorage.getItem(statisticsId);
@@ -269,6 +269,52 @@ function setStatistics(stats: UserStatistics): void
 	localStorage.setItem(statisticsId, JSON.stringify(stats));
 }
 
+function createGuessDistributionItem(item: number, value: number, maxValue: number, color: string, width: string): HTMLDivElement
+{
+	const element = document.createElement("div");
+	const itemElement = document.createElement("div");
+	const valueElement = document.createElement("div");
+
+	itemElement.className = "guessDistributionText";
+	itemElement.innerHTML = item.toString();
+	itemElement.style.marginRight = "4px";
+
+	valueElement.className = "guessDistributionText rowContainer guessDistributionValue";
+	valueElement.innerHTML = value.toString();
+	valueElement.style.width = `${Math.max(value / maxValue * 100, 7)}%`;
+	valueElement.style.background = color;
+	valueElement.style.display = "flex";
+	valueElement.style.color = "#fff";
+	valueElement.style.paddingRight = "8px";
+
+	element.className = "rowContainer";
+	element.style.width = width;
+	element.appendChild(itemElement);
+	element.appendChild(valueElement);
+	element.style.display = "flex";
+
+	return element;
+}
+
+function createGuessDistribution(stats: UserStatistics): HTMLDivElement
+{
+	const element = document.createElement("div");
+	const maxValue = Math.max.apply(null, stats.guessDistribution);
+
+	element.className = "columnContainer";
+	element.style.display = "flex";
+
+	stats.guessDistribution.forEach((value,index) =>
+	{
+		const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "400px");
+		guessDistributionItem.style.paddingBottom = "4px";
+
+		element.appendChild(guessDistributionItem);
+	})
+
+	return element;
+}
+
 function getCurrentWord(): string
 {
 	let word = "";
@@ -288,13 +334,13 @@ function getCurrentWord(): string
 
 function winHandler(): void
 {
-	alert("bingo");
+	window.alert("Bingo");
 
 	let userStats = getStatistics();
 
 	userStats.correctAnswers++;
 	userStats.totalAnswers++;
-	userStats.guessesDistribution[currentRow]++;
+	userStats.guessDistribution[currentRow]++;
 	userStats.currentStreak++;
 	userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
 
@@ -305,7 +351,7 @@ function winHandler(): void
 
 function loseHandler(): void
 {
-	alert("jsdngiksdkg");
+	window.alert("Loss");
 
 	let userStats = getStatistics();
 
@@ -528,6 +574,8 @@ window.addEventListener("load", async () =>
 		}
 
 	});
+
+	document.body.appendChild(createGuessDistribution(getStatistics()));
 });
 
 window.addEventListener("keydown", (event) =>
