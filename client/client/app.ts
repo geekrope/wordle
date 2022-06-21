@@ -6,6 +6,7 @@ const statisticsId = "statistics";
 const guessesId = "guesses";
 const wrapperId = "wrapper";
 const alertsContainerId = "alerts";
+const statisticsOpenButtonId = "statisticsOpen";
 
 let pickedWordIndex = "";
 
@@ -142,7 +143,7 @@ function createAlert(text: string): HTMLDivElement
 {
 	const alert = document.createElement("div");
 	alert.className = "alertBox";
-	alert.innerHTML = text;
+	alert.innerText = text;
 
 	const animation = alert.animate([
 		{ opacity: 1, offset: 0 },
@@ -189,7 +190,7 @@ function createKey(content: string, action: () => void): HTMLDivElement
 	}
 	else
 	{
-		container.innerHTML = content;
+		container.innerText = content;
 	}
 
 	container.onclick = action;
@@ -275,13 +276,13 @@ function createGuessDistributionItem(item: number, value: number, maxValue: numb
 	const itemElement = document.createElement("div");
 	const valueElement = document.createElement("div");
 
-	itemElement.className = "guessDistributionText";
-	itemElement.innerHTML = item.toString();
+	itemElement.className = "statisticsText";
+	itemElement.innerText = item.toString();
 	itemElement.style.marginRight = "4px";
 
-	valueElement.className = "guessDistributionText rowContainer guessDistributionValue";
-	valueElement.innerHTML = value.toString();
-	valueElement.style.width = `${Math.max(value / maxValue * 100, 7)}%`;
+	valueElement.className = "statisticsText rowContainer guessDistributionValue";
+	valueElement.innerText = value.toString();
+	valueElement.style.width = `max(${value / maxValue * 100}%, 16px)`;
 	valueElement.style.background = color;
 	valueElement.style.display = "flex";
 	valueElement.style.color = "#fff";
@@ -304,13 +305,124 @@ function createGuessDistribution(stats: UserStatistics): HTMLDivElement
 	element.className = "columnContainer";
 	element.style.display = "flex";
 
-	stats.guessDistribution.forEach((value,index) =>
+	stats.guessDistribution.forEach((value, index) =>
 	{
-		const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "400px");
+		const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "100%");
 		guessDistributionItem.style.paddingBottom = "4px";
 
 		element.appendChild(guessDistributionItem);
 	})
+
+	return element;
+}
+
+function createStatisticsHeader(content: string): HTMLHeadingElement
+{
+	const element = document.createElement("h1");
+
+	element.textContent = content;
+	element.className = "statisticsText";
+	element.style.fontSize = "16px";
+	element.style.fontWeight = "700";
+
+	return element;
+}
+
+function createStatisticsContentBlock(title: string, content: HTMLElement): HTMLDivElement
+{
+	const element = document.createElement("div");
+	const header = createStatisticsHeader(title);
+
+	header.style.width = "100%";
+	header.style.textAlign = "center";
+	content.style.margin = "0 auto 0 auto";
+
+	element.className = "columnContainer";
+	element.style.display = "flex";
+	element.style.width = "100%";
+	element.appendChild(header);
+	element.appendChild(content);
+
+	return element;
+}
+
+function createCloseButton(container: HTMLElement): HTMLImageElement
+{
+	const closeButton = document.createElement("img");
+	closeButton.src = "close.svg";
+	closeButton.className = "buttonIcon";
+	closeButton.style.position = "absolute";
+	closeButton.style.right = "16px";
+	closeButton.style.top = "16px";
+	closeButton.onclick = () => { container.remove(); };
+
+	return closeButton;
+}
+
+function createStatisticsBox(stats: UserStatistics, container: HTMLElement): HTMLDivElement
+{
+	const element = document.createElement("div");
+	element.className = "flex columnContainer statisticsContainer";
+	element.style.position = "relative";
+
+	const guessDistribution = createGuessDistribution(stats);
+	guessDistribution.style.width = "80%";
+
+	element.appendChild(createStatisticsContentBlock("STATISTICS", createStatisticsEvaluations(stats)));
+	element.appendChild(createStatisticsContentBlock("GUESS DISTRIBUTION", guessDistribution));
+	element.appendChild(createCloseButton(container));
+
+	return element;
+}
+
+function createStatisticsParameter(name: string, value: number): HTMLDivElement
+{
+	const element = document.createElement("div");
+	const header = document.createElement("div");
+	const parameter = document.createElement("div");
+
+	element.className = "columnContainer";
+	element.style.display = "flex";
+	element.style.flex = "1";
+
+	header.className = "statisticsText";
+	header.innerText = name;
+	header.style.textAlign = "center";
+
+	parameter.className = "statisticsText";
+	parameter.innerText = value.toString();
+	parameter.style.textAlign = "center";
+	parameter.style.fontWeight = "400";
+	parameter.style.fontSize = "36px";
+
+	element.appendChild(parameter);
+	element.appendChild(header);
+
+	return element;
+}
+
+function createStatisticsEvaluations(stats: UserStatistics): HTMLDivElement
+{
+	const element = document.createElement("div");
+
+	element.className = "rowContainer";
+	element.style.display = "flex";
+	element.style.width = "max(50%, 200px)";
+
+	element.appendChild(createStatisticsParameter("Played", stats.totalAnswers));
+	element.appendChild(createStatisticsParameter("Win %", Math.round(stats.correctAnswers / stats.totalAnswers * 100)));
+	element.appendChild(createStatisticsParameter("Current streak", stats.currentStreak));
+	element.appendChild(createStatisticsParameter("Max streak", stats.maxStreak));
+
+	return element;
+}
+
+function createStatisticsOverlay(): HTMLDivElement
+{
+	const element = document.createElement("div");
+
+	element.className = "overlay";
+	element.appendChild(createStatisticsBox(getStatistics(), element));
 
 	return element;
 }
@@ -325,7 +437,7 @@ function getCurrentWord(): string
 
 		if (letterElement)
 		{
-			word += letterElement.innerHTML;
+			word += letterElement.innerText;
 		}
 	}
 
@@ -478,7 +590,7 @@ function keyHandler(charCode: number): void
 
 		if (alphabet.test(char) && currentColumn < lettersCount && letterElement)
 		{
-			letterElement.innerHTML = char;
+			letterElement.innerText = char;
 			currentColumn++;
 
 			setSelectedLetterStyle(letterElement);
@@ -519,7 +631,7 @@ function keyHandler(charCode: number): void
 
 			if (editedElement)
 			{
-				editedElement.innerHTML = "";
+				editedElement.innerText = "";
 				setUnselectedLetterStyle(editedElement);
 				currentColumn--;
 			}
@@ -575,7 +687,7 @@ window.addEventListener("load", async () =>
 
 	});
 
-	document.body.appendChild(createGuessDistribution(getStatistics()));
+	document.getElementById(statisticsOpenButtonId)?.addEventListener("click", () => { document.body.appendChild(createStatisticsOverlay()); });
 });
 
 window.addEventListener("keydown", (event) =>

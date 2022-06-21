@@ -16,6 +16,7 @@ const statisticsId = "statistics";
 const guessesId = "guesses";
 const wrapperId = "wrapper";
 const alertsContainerId = "alerts";
+const statisticsOpenButtonId = "statisticsOpen";
 let pickedWordIndex = "";
 var letterType;
 (function (letterType) {
@@ -109,7 +110,7 @@ function createBoard() {
 function createAlert(text) {
     const alert = document.createElement("div");
     alert.className = "alertBox";
-    alert.innerHTML = text;
+    alert.innerText = text;
     const animation = alert.animate([
         { opacity: 1, offset: 0 },
         { opacity: 1, offset: 0.7 },
@@ -143,7 +144,7 @@ function createKey(content, action) {
         container.innerHTML = `<img src="${content.substring(1)}"></img>`;
     }
     else {
-        container.innerHTML = content;
+        container.innerText = content;
     }
     container.onclick = action;
     return container;
@@ -199,12 +200,12 @@ function createGuessDistributionItem(item, value, maxValue, color, width) {
     const element = document.createElement("div");
     const itemElement = document.createElement("div");
     const valueElement = document.createElement("div");
-    itemElement.className = "guessDistributionText";
-    itemElement.innerHTML = item.toString();
+    itemElement.className = "statisticsText";
+    itemElement.innerText = item.toString();
     itemElement.style.marginRight = "4px";
-    valueElement.className = "guessDistributionText rowContainer guessDistributionValue";
-    valueElement.innerHTML = value.toString();
-    valueElement.style.width = `${Math.max(value / maxValue * 100, 7)}%`;
+    valueElement.className = "statisticsText rowContainer guessDistributionValue";
+    valueElement.innerText = value.toString();
+    valueElement.style.width = `max(${value / maxValue * 100}%, 16px)`;
     valueElement.style.background = color;
     valueElement.style.display = "flex";
     valueElement.style.color = "#fff";
@@ -222,10 +223,88 @@ function createGuessDistribution(stats) {
     element.className = "columnContainer";
     element.style.display = "flex";
     stats.guessDistribution.forEach((value, index) => {
-        const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "400px");
+        const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "100%");
         guessDistributionItem.style.paddingBottom = "4px";
         element.appendChild(guessDistributionItem);
     });
+    return element;
+}
+function createStatisticsHeader(content) {
+    const element = document.createElement("h1");
+    element.textContent = content;
+    element.className = "statisticsText";
+    element.style.fontSize = "16px";
+    element.style.fontWeight = "700";
+    return element;
+}
+function createStatisticsContentBlock(title, content) {
+    const element = document.createElement("div");
+    const header = createStatisticsHeader(title);
+    header.style.width = "100%";
+    header.style.textAlign = "center";
+    content.style.margin = "0 auto 0 auto";
+    element.className = "columnContainer";
+    element.style.display = "flex";
+    element.style.width = "100%";
+    element.appendChild(header);
+    element.appendChild(content);
+    return element;
+}
+function createCloseButton(container) {
+    const closeButton = document.createElement("img");
+    closeButton.src = "close.svg";
+    closeButton.className = "buttonIcon";
+    closeButton.style.position = "absolute";
+    closeButton.style.right = "16px";
+    closeButton.style.top = "16px";
+    closeButton.onclick = () => { container.remove(); };
+    return closeButton;
+}
+function createStatisticsBox(stats, container) {
+    const element = document.createElement("div");
+    element.className = "flex columnContainer statisticsContainer";
+    element.style.position = "relative";
+    const guessDistribution = createGuessDistribution(stats);
+    guessDistribution.style.width = "80%";
+    element.appendChild(createStatisticsContentBlock("STATISTICS", createStatisticsEvaluations(stats)));
+    element.appendChild(createStatisticsContentBlock("GUESS DISTRIBUTION", guessDistribution));
+    element.appendChild(createCloseButton(container));
+    return element;
+}
+function createStatisticsParameter(name, value) {
+    const element = document.createElement("div");
+    const header = document.createElement("div");
+    const parameter = document.createElement("div");
+    element.className = "columnContainer";
+    element.style.display = "flex";
+    element.style.flex = "1";
+    header.className = "statisticsText";
+    header.innerText = name;
+    header.style.textAlign = "center";
+    parameter.className = "statisticsText";
+    parameter.innerText = value.toString();
+    parameter.style.textAlign = "center";
+    parameter.style.fontWeight = "400";
+    parameter.style.fontSize = "36px";
+    element.appendChild(parameter);
+    element.appendChild(header);
+    return element;
+}
+function createStatisticsEvaluations(stats) {
+    const element = document.createElement("div");
+    element.className = "rowContainer";
+    element.style.display = "flex";
+    element.style.width = "max(50%, 200px)";
+    element.appendChild(createStatisticsParameter("Played", stats.totalAnswers));
+    element.appendChild(createStatisticsParameter("Win %", Math.round(stats.correctAnswers / stats.totalAnswers * 100)));
+    element.appendChild(createStatisticsParameter("Current streak", stats.currentStreak));
+    element.appendChild(createStatisticsParameter("Max streak", stats.maxStreak));
+    return element;
+}
+function createStatisticsOverlay() {
+    const element = document.createElement("div");
+    element.className = "overlay";
+    element.appendChild(createStatisticsBox(getStatistics(), element));
     return element;
 }
 function getCurrentWord() {
@@ -233,7 +312,7 @@ function getCurrentWord() {
     for (let index = 0; index < lettersCount; index++) {
         const letterElement = getLetter(index, currentRow);
         if (letterElement) {
-            word += letterElement.innerHTML;
+            word += letterElement.innerText;
         }
     }
     return word;
@@ -338,7 +417,7 @@ function keyHandler(charCode) {
         const char = String.fromCharCode(charCode);
         const letterElement = getLetter(currentColumn, currentRow);
         if (alphabet.test(char) && currentColumn < lettersCount && letterElement) {
-            letterElement.innerHTML = char;
+            letterElement.innerText = char;
             currentColumn++;
             setSelectedLetterStyle(letterElement);
         }
@@ -366,7 +445,7 @@ function keyHandler(charCode) {
         else if (charCode == 8 && currentColumn - 1 >= 0) {
             const editedElement = getLetter(currentColumn - 1, currentRow);
             if (editedElement) {
-                editedElement.innerHTML = "";
+                editedElement.innerText = "";
                 setUnselectedLetterStyle(editedElement);
                 currentColumn--;
             }
@@ -389,6 +468,7 @@ function decodeQuery(search) {
     return result;
 }
 window.addEventListener("load", () => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const wrapper = document.getElementById(wrapperId);
     if (wrapper) {
         wrapper.appendChild(createBoard());
@@ -404,7 +484,7 @@ window.addEventListener("load", () => __awaiter(void 0, void 0, void 0, function
             pickedWordIndex = yield (yield fetch(`/pick?type=daily`)).text();
         }
     }));
-    document.body.appendChild(createGuessDistribution(getStatistics()));
+    (_a = document.getElementById(statisticsOpenButtonId)) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => { document.body.appendChild(createStatisticsOverlay()); });
 }));
 window.addEventListener("keydown", (event) => {
     keyHandler(event.keyCode);

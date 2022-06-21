@@ -36,11 +36,13 @@
     <None Include="app.ts" />
     <None Include="routes\index.ts" />
     <Content Include="routes\public\backspace.svg" />
+    <Content Include="routes\public\close.svg" />
     <Content Include="routes\public\github-icon.svg" />
     <Content Include="routes\public\header.svg" />
     <Content Include="routes\public\share.svg" />
     <Content Include="routes\public\index.html" />
     <Content Include="routes\public\KarnakPro-Bold.ttf" />
+    <Content Include="routes\public\statistics.svg" />
     <Content Include="routes\public\stylesheet.css">
       <SubType>Code</SubType>
     </Content>

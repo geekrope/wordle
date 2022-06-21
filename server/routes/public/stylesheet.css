@@ -33,6 +33,7 @@ body, html {
     align-items: center;
     width: 100%;
     height: 100%;
+    position: absolute;
 }
 
 .flex {
@@ -224,6 +225,7 @@ body, html {
     width: 24px;
     height: 24px;
     cursor: pointer;
+    margin: 0 4px;
 }
 
 .alerts {
@@ -248,7 +250,7 @@ body, html {
     color: #ffffff;
 }
 
-.guessDistributionText {
+.statisticsText {
     font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
 }
@@ -258,8 +260,21 @@ body, html {
     font-weight: 700;
 }
 
-.statisticsConainer {
+.statisticsContainer {
     box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
     border-radius: 8px;
-    width: min(500px,100vw);
+    width: min(472px, calc(100vw - 32px));
+    height: 300px;
+    padding: 16px;
+    background: #fff;
+}
+
+.overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background: rgba(255, 255, 255, 0.5);
 }
