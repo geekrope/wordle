@@ -62,7 +62,7 @@ interface UserStatistics
 {
 	correctAnswers: number;
 	totalAnswers: number;
-	guessDistribution: number[];
+	guessesDistribution: number[];
 	currentStreak: number;
 	maxStreak: number;
 }
@@ -244,7 +244,7 @@ function createKeyboard(): HTMLDivElement
 
 function createBlankStatistics(): UserStatistics
 {
-	return { correctAnswers: 0, totalAnswers: 0, guessDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+	return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array<number>(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
 }
 
 function getStatistics(): UserStatistics
@@ -300,12 +300,12 @@ function createGuessDistributionItem(item: number, value: number, maxValue: numb
 function createGuessDistribution(stats: UserStatistics): HTMLDivElement
 {
 	const element = document.createElement("div");
-	const maxValue = Math.max.apply(null, stats.guessDistribution);
+	const maxValue = Math.max.apply(null, stats.guessesDistribution);
 
 	element.className = "columnContainer";
 	element.style.display = "flex";
 
-	stats.guessDistribution.forEach((value, index) =>
+	stats.guessesDistribution.forEach((value, index) =>
 	{
 		const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "100%");
 		guessDistributionItem.style.paddingBottom = "4px";
@@ -459,7 +459,7 @@ function winHandler(): void
 
 	userStats.correctAnswers++;
 	userStats.totalAnswers++;
-	userStats.guessDistribution[currentRow]++;
+	userStats.guessesDistribution[currentRow]++;
 	userStats.currentStreak++;
 	userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
 
