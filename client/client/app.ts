@@ -335,11 +335,12 @@ function createStatisticsContentBlock(title: string, content: HTMLElement): HTML
 
 	header.style.width = "100%";
 	header.style.textAlign = "center";
+
 	content.style.margin = "0 auto 0 auto";
 
 	element.className = "columnContainer";
 	element.style.display = "flex";
-	element.style.width = "100%";
+	element.style.width = "100%";	
 	element.appendChild(header);
 	element.appendChild(content);
 
@@ -357,22 +358,6 @@ function createCloseButton(container: HTMLElement): HTMLImageElement
 	closeButton.onclick = () => { container.remove(); };
 
 	return closeButton;
-}
-
-function createStatisticsBox(stats: UserStatistics, container: HTMLElement): HTMLDivElement
-{
-	const element = document.createElement("div");
-	element.className = "flex columnContainer statisticsContainer";
-	element.style.position = "relative";
-
-	const guessDistribution = createGuessDistribution(stats);
-	guessDistribution.style.width = "80%";
-
-	element.appendChild(createStatisticsContentBlock("STATISTICS", createStatisticsEvaluations(stats)));
-	element.appendChild(createStatisticsContentBlock("GUESS DISTRIBUTION", guessDistribution));
-	element.appendChild(createCloseButton(container));
-
-	return element;
 }
 
 function createStatisticsParameter(name: string, value: number): HTMLDivElement
@@ -410,9 +395,31 @@ function createStatisticsEvaluations(stats: UserStatistics): HTMLDivElement
 	element.style.width = "max(50%, 200px)";
 
 	element.appendChild(createStatisticsParameter("Played", stats.totalAnswers));
-	element.appendChild(createStatisticsParameter("Win %", Math.round(stats.correctAnswers / stats.totalAnswers * 100)));
+	element.appendChild(createStatisticsParameter("Win %", stats.totalAnswers == 0 ? 0 : Math.round(stats.correctAnswers / stats.totalAnswers * 100)));
 	element.appendChild(createStatisticsParameter("Current streak", stats.currentStreak));
 	element.appendChild(createStatisticsParameter("Max streak", stats.maxStreak));
+
+	return element;
+}
+
+function createStatisticsBox(stats: UserStatistics, container: HTMLElement): HTMLDivElement
+{
+	const element = document.createElement("div");
+	element.className = "flex columnContainer statisticsContainer";
+	element.style.position = "relative";
+
+	const guessDistribution = createGuessDistribution(stats);
+	guessDistribution.style.width = "80%";
+
+	const statisticsBlock = createStatisticsContentBlock("STATISTICS", createStatisticsEvaluations(stats));
+	statisticsBlock.style.marginTop = "24px";
+
+	element.appendChild(statisticsBlock);
+	if (stats.totalAnswers != 0)
+	{
+		element.appendChild(createStatisticsContentBlock("GUESS DISTRIBUTION", guessDistribution));
+	}
+	element.appendChild(createCloseButton(container));
 
 	return element;
 }

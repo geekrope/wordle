@@ -263,8 +263,9 @@ body, html {
 .statisticsContainer {
     box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
     border-radius: 8px;
-    width: min(472px, calc(100vw - 32px));
-    height: 300px;
+    width: min(478px, calc(100vw - 64px));
+    height: min-content;
+    overflow-x: auto;
     padding: 16px;
     background: #fff;
 }
