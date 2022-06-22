@@ -211,6 +211,7 @@ body, html {
 .leftMenu, .rightMenu {
     width: 70px;
     display: flex;
+    align-items: center;
 }
 
 .leftMenu {
@@ -222,8 +223,6 @@ body, html {
 }
 
 .buttonIcon {
-    width: 24px;
-    height: 24px;
     cursor: pointer;
     margin: 0 4px;
 }
