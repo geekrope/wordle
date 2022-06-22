@@ -180,7 +180,7 @@ function createKeyboard() {
     return container;
 }
 function createBlankStatistics() {
-    return { correctAnswers: 0, totalAnswers: 0, guessDistribution: new Array(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
+    return { correctAnswers: 0, totalAnswers: 0, guessesDistribution: new Array(rowsCount).fill(0), currentStreak: 0, maxStreak: 0 };
 }
 function getStatistics() {
     const stats = localStorage.getItem(statisticsId);
@@ -219,10 +219,10 @@ function createGuessDistributionItem(item, value, maxValue, color, width) {
 }
 function createGuessDistribution(stats) {
     const element = document.createElement("div");
-    const maxValue = Math.max.apply(null, stats.guessDistribution);
+    const maxValue = Math.max.apply(null, stats.guessesDistribution);
     element.className = "columnContainer";
     element.style.display = "flex";
-    stats.guessDistribution.forEach((value, index) => {
+    stats.guessesDistribution.forEach((value, index) => {
         const guessDistributionItem = createGuessDistributionItem(index + 1, value, maxValue, "rgb(120, 124, 126)", "100%");
         guessDistributionItem.style.paddingBottom = "4px";
         element.appendChild(guessDistributionItem);
@@ -326,7 +326,7 @@ function winHandler() {
     let userStats = getStatistics();
     userStats.correctAnswers++;
     userStats.totalAnswers++;
-    userStats.guessDistribution[currentRow]++;
+    userStats.guessesDistribution[currentRow]++;
     userStats.currentStreak++;
     userStats.maxStreak = userStats.currentStreak > userStats.maxStreak ? userStats.currentStreak : userStats.maxStreak;
     setStatistics(userStats);
